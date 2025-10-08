@@ -12,6 +12,7 @@ class PatientRequestModel {
   final String therapistName;
   final String therapistImage;
   final String duration;
+  final String? fcmToken;
   final double price;
   final ReviewModel? review;
 
@@ -30,6 +31,7 @@ class PatientRequestModel {
     required this.therapistImage,
     required this.duration,
     required this.price,
+    this.fcmToken,
     this.review,
   });
 
@@ -47,6 +49,7 @@ class PatientRequestModel {
     String? therapistName,
     String? therapistImage,
     String? duration,
+    String? fcmToken,
     double? price,
     ReviewModel? review,
   }) {
@@ -64,6 +67,7 @@ class PatientRequestModel {
       therapistName: therapistName ?? this.therapistName,
       therapistImage: therapistImage ?? this.therapistImage,
       duration: duration ?? this.duration,
+      fcmToken: fcmToken ?? this.fcmToken,
       price: price ?? this.price,
       review: review ?? this.review,
     );

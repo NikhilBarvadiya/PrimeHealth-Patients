@@ -52,10 +52,10 @@ class HomeCtrl extends GetxController {
   ].obs;
 
   var regularServices = [
-    ServiceModel(id: 1, name: 'Ortho Therapy', description: 'Specialized treatment for bone and joint issues', icon: Icons.fitness_center, isActive: true, rate: 1200.0),
-    ServiceModel(id: 2, name: 'Neuro Therapy', description: 'Treatment for neurological conditions', icon: Icons.psychology, isActive: true, rate: 1500.0),
-    ServiceModel(id: 3, name: 'Pain Management', description: 'Advanced techniques to alleviate chronic pain', icon: Icons.healing_rounded, isActive: true, rate: 1400.0),
-    ServiceModel(id: 4, name: 'Pediatric Therapy', description: 'Therapy for children developmental milestones', icon: Icons.child_care_rounded, isActive: true, rate: 1100.0),
+    ServiceModel(id: 1, name: 'Ortho Therapy', category: 'Orthopedic', description: 'Specialized treatment for bone and joint issues', icon: Icons.fitness_center, isActive: true, rate: 1200.0),
+    ServiceModel(id: 2, name: 'Neuro Therapy', category: 'Neurology', description: 'Treatment for neurological conditions', icon: Icons.psychology, isActive: true, rate: 1500.0),
+    ServiceModel(id: 3, name: 'Pain Management', category: 'Other', description: 'Advanced techniques to alleviate chronic pain', icon: Icons.healing_rounded, isActive: true, rate: 1400.0),
+    ServiceModel(id: 4, name: 'Pediatric Therapy', category: 'Pediatrics', description: 'Therapy for children developmental milestones', icon: Icons.child_care_rounded, isActive: true, rate: 1100.0),
   ].obs;
 
   @override
@@ -70,7 +70,6 @@ class HomeCtrl extends GetxController {
       userName.value = userData['name'] ?? 'Patient';
     }
     featuredDoctors.assignAll(sampleDoctors);
-
   }
 
   void cancelAppointment(String appointmentId) {

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/models/appointment_model.dart';
 import 'package:prime_health_patients/models/calling_model.dart';
 import 'package:prime_health_patients/models/doctor_model.dart';
+import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/models/user_model.dart';
 import 'package:prime_health_patients/service/calling_service.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
@@ -11,6 +12,7 @@ import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/calling_view.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists_ctrl.dart';
+import 'package:prime_health_patients/views/dashboard/services/ui/slot_selection.dart';
 
 class DoctorDetails extends StatelessWidget {
   final DoctorModel doctor;
@@ -149,7 +151,16 @@ class DoctorDetails extends StatelessWidget {
               flex: 2,
               child: ElevatedButton(
                 onPressed: () {
-                  // Get.to(() => SlotSelection(doctor: doctor, service: null,));
+                  ServiceModel serviceModel = ServiceModel(
+                    id: doctor.id.length,
+                    name: doctor.name,
+                    description: doctor.patientsTreatedText,
+                    icon: Icons.healing,
+                    isActive: false,
+                    rate: 1400.0,
+                    category: "",
+                  );
+                  Get.to(() => SlotSelection(service: serviceModel));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryTeal,
