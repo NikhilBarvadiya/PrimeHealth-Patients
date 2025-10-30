@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 
@@ -16,6 +17,19 @@ class Helper {
       toaster.error("Error while clicking image!");
       return null;
     }
+  }
+
+  Future<String> getDeviceUniqueId() async {
+    String deviceIdentifier = '';
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      deviceIdentifier = androidInfo.id;
+    } else if (Platform.isIOS) {
+      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      deviceIdentifier = iosInfo.identifierForVendor!;
+    }
+    return deviceIdentifier;
   }
 }
 

@@ -76,30 +76,29 @@ class Login extends StatelessWidget {
   }
 
   Widget _buildLoginForm(LoginCtrl ctrl, BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_buildEmailField(ctrl, context), const SizedBox(height: 20), _buildPasswordField(ctrl, context), const SizedBox(height: 16), _buildForgotPassword()],
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildMobileField(ctrl, context), const SizedBox(height: 20)]);
   }
 
-  Widget _buildEmailField(LoginCtrl ctrl, BuildContext context) {
+  Widget _buildMobileField(LoginCtrl ctrl, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Email Address',
+          'Mobile Number',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: ctrl.emailCtrl,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
+          controller: ctrl.mobileCtrl,
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.done,
+          maxLength: 10,
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
           decoration: InputDecoration(
-            hintText: 'doctor@primehealth.com',
+            hintText: 'Enter 10-digit mobile number',
             hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
-            prefixIcon: Icon(Icons.email_rounded, color: AppTheme.textSecondary, size: 22),
+            prefixIcon: Icon(Icons.phone_rounded, color: AppTheme.textSecondary, size: 22),
+            counterText: '',
             filled: true,
             fillColor: AppTheme.backgroundWhite,
             border: OutlineInputBorder(
@@ -116,68 +115,9 @@ class Login extends StatelessWidget {
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
+          onFieldSubmitted: (_) => ctrl.login(),
         ),
       ],
-    );
-  }
-
-  Widget _buildPasswordField(LoginCtrl ctrl, BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Password',
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-        ),
-        const SizedBox(height: 8),
-        Obx(() {
-          return TextFormField(
-            controller: ctrl.passwordCtrl,
-            obscureText: !ctrl.isPasswordVisible.value,
-            textInputAction: TextInputAction.done,
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Enter your password',
-              hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
-              prefixIcon: Icon(Icons.lock_rounded, color: AppTheme.textSecondary, size: 22),
-              suffixIcon: IconButton(
-                onPressed: ctrl.togglePasswordVisibility,
-                icon: Icon(ctrl.isPasswordVisible.value ? Icons.visibility_rounded : Icons.visibility_off_rounded, color: AppTheme.textSecondary, size: 22),
-              ).paddingOnly(right: 5),
-              filled: true,
-              fillColor: AppTheme.backgroundWhite,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.transparent),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.borderColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-            onFieldSubmitted: (_) => ctrl.login(),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildForgotPassword() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: () {},
-        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-        child: Text(
-          'Forgot Password?',
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
-        ),
-      ),
     );
   }
 

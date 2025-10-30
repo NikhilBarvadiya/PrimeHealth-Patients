@@ -185,9 +185,9 @@ class DoctorDetails extends StatelessWidget {
     }
     final userData = await read(AppSession.userData);
     if (userData != null) {
-      UserModel userModel = UserModel(id: "1", name: userData["name"] ?? 'Dr. John Smith', fcmToken: userData["fcmToken"] ?? '', email: '', mobile: '', password: '', city: '', state: '', address: '');
+      UserModel userModel = UserModel(id: "1", name: userData["name"] ?? 'Dr. John Smith', email: '', address: {}, mobileNo: '');
       String channelName = "${userModel.id}_${doctor.id}_${DateTime.now().millisecondsSinceEpoch}";
-      CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: userModel.fcmToken, callType: callType, status: CallStatus.calling, channelName: channelName);
+      CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: "", callType: callType, status: CallStatus.calling, channelName: channelName);
       CallingService().makeCall(appointmentModel.fcmToken, callData);
       if (context.mounted) {
         await Navigator.push(

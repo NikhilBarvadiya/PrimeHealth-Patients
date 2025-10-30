@@ -26,20 +26,16 @@ class Register extends StatelessWidget {
                       const SizedBox(height: 32),
                       _buildHeaderSection(context),
                       const SizedBox(height: 32),
-                      _buildRegistrationForm(ctrl, context),
+                      Obx(() => _buildStepperHeader(ctrl)),
                       const SizedBox(height: 24),
-                      _buildTermsAgreement(context),
+                      Obx(() => _buildCurrentStep(ctrl, context)),
                       const SizedBox(height: 24),
-                      _buildLocationStatus(ctrl),
-                      const SizedBox(height: 24),
-                      Obx(() => _buildRegisterButton(ctrl, context)),
-                      const SizedBox(height: 24),
-                      _buildLoginRedirect(context, ctrl),
+                      Obx(() => _buildStepperControls(ctrl, context)),
                       const SizedBox(height: 20),
                     ],
                   ),
                 ),
-                _buildBackButton(),
+                _buildBackButton(ctrl),
               ],
             ),
           ),
@@ -79,7 +75,73 @@ class Register extends StatelessWidget {
     );
   }
 
-  Widget _buildRegistrationForm(RegisterCtrl ctrl, BuildContext context) {
+  Widget _buildStepperHeader(RegisterCtrl ctrl) {
+    return Row(
+      children: [
+        _buildStepCircle(ctrl, 0, 'Personal'),
+        _buildStepConnector(),
+        _buildStepCircle(ctrl, 1, 'Location'),
+        _buildStepConnector(),
+        _buildStepCircle(ctrl, 2, 'Emergency'),
+        _buildStepConnector(),
+        _buildStepCircle(ctrl, 3, 'Medical'),
+      ],
+    );
+  }
+
+  Widget _buildStepCircle(RegisterCtrl ctrl, int step, String title) {
+    final isActive = ctrl.currentStep.value == step;
+    final isCompleted = ctrl.currentStep.value > step;
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isActive || isCompleted ? AppTheme.primaryTeal : AppTheme.backgroundWhite,
+              shape: BoxShape.circle,
+              border: Border.all(color: isActive || isCompleted ? AppTheme.primaryTeal : AppTheme.borderColor, width: 1),
+            ),
+            child: Center(
+              child: isCompleted
+                  ? Icon(Icons.check, size: 16, color: Colors.white)
+                  : Text(
+                      '${step + 1}',
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: isActive ? Colors.white : AppTheme.textSecondary),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w500, color: isActive || isCompleted ? AppTheme.primaryTeal : AppTheme.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepConnector() {
+    return Container(height: 2, width: 16, color: AppTheme.borderColor, margin: const EdgeInsets.only(bottom: 16));
+  }
+
+  Widget _buildCurrentStep(RegisterCtrl ctrl, BuildContext context) {
+    switch (ctrl.currentStep.value) {
+      case 0:
+        return _buildPersonalInfoStep(ctrl, context);
+      case 1:
+        return _buildLocationStep(ctrl, context);
+      case 2:
+        return _buildEmergencyStep(ctrl, context);
+      case 3:
+        return _buildMedicalStep(ctrl, context);
+      default:
+        return _buildPersonalInfoStep(ctrl, context);
+    }
+  }
+
+  Widget _buildPersonalInfoStep(RegisterCtrl ctrl, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -89,21 +151,113 @@ class Register extends StatelessWidget {
         const SizedBox(height: 16),
         _buildEmailField(ctrl, context),
         const SizedBox(height: 16),
-        _buildPasswordField(ctrl, context),
-        const SizedBox(height: 16),
         _buildMobileField(ctrl, context),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        _buildDateOfBirthField(ctrl, context),
+        const SizedBox(height: 16),
+        _buildGenderField(ctrl, context),
+      ],
+    );
+  }
+
+  Widget _buildLocationStep(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _buildSectionHeader('Location Information'),
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
+        Obx(() {
+          return ElevatedButton.icon(
+            onPressed: ctrl.getCurrentLocation,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            icon: ctrl.isLocationLoading.value == true
+                ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary))
+                : Icon(Icons.location_on, size: 15),
+            label: Text('Get Current Location', style: TextStyle(fontSize: 12)),
+          );
+        }),
+        const SizedBox(height: 16),
         Row(
+          spacing: 10.0,
           children: [
             Expanded(child: _buildCityField(ctrl, context)),
-            const SizedBox(width: 12),
             Expanded(child: _buildStateField(ctrl, context)),
           ],
         ),
         const SizedBox(height: 16),
-        _buildAddressField(ctrl, context),
+        _buildCountryField(ctrl, context),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildEmergencyStep(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [_buildSectionHeader('Emergency Contact'), const SizedBox(height: 20), _buildEmergencyNameField(ctrl, context), const SizedBox(height: 16), _buildEmergencyMobileField(ctrl, context)],
+    );
+  }
+
+  Widget _buildMedicalStep(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Medical Information'),
+        const SizedBox(height: 20),
+        _buildBloodGroupField(ctrl, context),
+        const SizedBox(height: 16),
+        _buildAllergiesField(ctrl, context),
+        const SizedBox(height: 24),
+        _buildTermsAgreement(context),
+      ],
+    );
+  }
+
+  Widget _buildStepperControls(RegisterCtrl ctrl, BuildContext context) {
+    return Row(
+      children: [
+        if (ctrl.currentStep.value > 0)
+          Expanded(
+            child: OutlinedButton(
+              onPressed: ctrl.previousStep,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryTeal,
+                side: BorderSide(color: AppTheme.primaryTeal),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Text('Previous', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        if (ctrl.currentStep.value > 0) const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: ctrl.isLoading.value
+                ? null
+                : () {
+                    if (ctrl.currentStep.value < 3) {
+                      ctrl.nextStep();
+                    } else {
+                      ctrl.register();
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryTeal,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(vertical: ctrl.isLoading.value ? 12 : 16),
+            ),
+            child: ctrl.isLoading.value
+                ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8))))
+                : Text(ctrl.currentStep.value == 3 ? 'Create Account' : 'Next', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+          ),
+        ),
       ],
     );
   }
@@ -120,7 +274,7 @@ class Register extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Full Name',
+          'Full Name *',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
@@ -158,7 +312,7 @@ class Register extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Email Address',
+          'Email Address *',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
@@ -192,57 +346,12 @@ class Register extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordField(RegisterCtrl ctrl, BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Password',
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-        ),
-        const SizedBox(height: 8),
-        Obx(() {
-          return TextFormField(
-            controller: ctrl.passwordCtrl,
-            obscureText: !ctrl.isPasswordVisible.value,
-            textInputAction: TextInputAction.next,
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Create a strong password',
-              hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
-              prefixIcon: Icon(Icons.lock_rounded, color: AppTheme.textSecondary, size: 22),
-              suffixIcon: IconButton(
-                onPressed: ctrl.togglePasswordVisibility,
-                icon: Icon(ctrl.isPasswordVisible.value ? Icons.visibility_rounded : Icons.visibility_off_rounded, color: AppTheme.textSecondary, size: 22),
-              ),
-              filled: true,
-              fillColor: AppTheme.backgroundWhite,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.transparent),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.borderColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
   Widget _buildMobileField(RegisterCtrl ctrl, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Mobile Number',
+          'Mobile Number *',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
@@ -278,12 +387,83 @@ class Register extends StatelessWidget {
     );
   }
 
+  Widget _buildDateOfBirthField(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Date of Birth *',
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: ctrl.dateOfBirthCtrl,
+          readOnly: true,
+          onTap: () => ctrl.selectDateOfBirth(context),
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Select your date of birth',
+            hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
+            prefixIcon: Icon(Icons.calendar_today_rounded, color: AppTheme.textSecondary, size: 22),
+            filled: true,
+            fillColor: AppTheme.backgroundWhite,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.transparent),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGenderField(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gender *',
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        Obx(
+          () => Row(
+            children: ctrl.genderOptions.map((gender) {
+              return Expanded(
+                child: TextButton.icon(
+                  onPressed: () {
+                    ctrl.setGender(gender);
+                  },
+                  style: ButtonStyle(padding: WidgetStatePropertyAll(EdgeInsets.only(left: 10, right: 10))),
+                  icon: Icon(ctrl.selectedGender.value == gender ? Icons.radio_button_on : Icons.radio_button_off, color: ctrl.selectedGender.value == gender ? null : Colors.grey),
+                  label: Text(
+                    gender[0].toUpperCase() + gender.substring(1),
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: ctrl.selectedGender.value == gender ? null : Colors.grey),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCityField(RegisterCtrl ctrl, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'City',
+          'City *',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
@@ -321,7 +501,7 @@ class Register extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'State',
+          'State *',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
@@ -332,7 +512,7 @@ class Register extends StatelessWidget {
           decoration: InputDecoration(
             hintText: 'Enter your state',
             hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
-            prefixIcon: Icon(Icons.map_rounded, color: AppTheme.textSecondary, size: 22),
+            prefixIcon: Icon(Icons.location_city_rounded, color: AppTheme.textSecondary, size: 22),
             filled: true,
             fillColor: AppTheme.backgroundWhite,
             border: OutlineInputBorder(
@@ -354,24 +534,23 @@ class Register extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressField(RegisterCtrl ctrl, BuildContext context) {
+  Widget _buildCountryField(RegisterCtrl ctrl, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Full Address',
+          'Country *',
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: ctrl.addressCtrl,
-          textInputAction: TextInputAction.done,
-          maxLines: 3,
+          controller: ctrl.countryCtrl,
+          textInputAction: TextInputAction.next,
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
           decoration: InputDecoration(
-            hintText: 'Enter your complete address',
+            hintText: 'Enter your country',
             hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
-            prefixIcon: Icon(Icons.home_rounded, color: AppTheme.textSecondary, size: 22),
+            prefixIcon: Icon(Icons.location_city_rounded, color: AppTheme.textSecondary, size: 22),
             filled: true,
             fillColor: AppTheme.backgroundWhite,
             border: OutlineInputBorder(
@@ -389,6 +568,160 @@ class Register extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildEmergencyNameField(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Emergency Contact Name *',
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: ctrl.emergencyNameCtrl,
+          textInputAction: TextInputAction.next,
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Enter emergency contact name',
+            hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
+            prefixIcon: Icon(Icons.emergency_rounded, color: AppTheme.textSecondary, size: 22),
+            filled: true,
+            fillColor: AppTheme.backgroundWhite,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.transparent),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmergencyMobileField(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Emergency Contact Mobile *',
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: ctrl.emergencyMobileCtrl,
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.next,
+          maxLength: 10,
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Enter 10-digit mobile number',
+            hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
+            prefixIcon: Icon(Icons.phone_rounded, color: AppTheme.textSecondary, size: 22),
+            counterText: '',
+            filled: true,
+            fillColor: AppTheme.backgroundWhite,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.transparent),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBloodGroupField(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Blood Group',
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: ctrl.selectedBloodGroup.value,
+          onChanged: (value) => ctrl.setBloodGroup(value!),
+          items: ctrl.bloodGroupOptions.map((bloodGroup) {
+            return DropdownMenuItem(
+              value: bloodGroup,
+              child: Text(bloodGroup, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500)),
+            );
+          }).toList(),
+          decoration: InputDecoration(
+            hintText: 'Select blood group',
+            hintStyle: GoogleFonts.inter(color: AppTheme.textLight, fontWeight: FontWeight.w400),
+            prefixIcon: Icon(Icons.bloodtype_rounded, color: AppTheme.textSecondary, size: 22),
+            filled: true,
+            fillColor: AppTheme.backgroundWhite,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.transparent),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAllergiesField(RegisterCtrl ctrl, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Allergies',
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        Obx(
+          () => Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ctrl.commonAllergies.map((allergy) {
+              final isSelected = ctrl.selectedAllergies.contains(allergy);
+              return FilterChip(
+                label: Text(allergy),
+                selected: isSelected,
+                onSelected: (selected) => ctrl.toggleAllergy(allergy),
+                selectedColor: AppTheme.primaryTeal.withOpacity(0.2),
+                checkmarkColor: AppTheme.primaryTeal,
+                labelStyle: GoogleFonts.inter(color: isSelected ? AppTheme.primaryTeal : AppTheme.textPrimary, fontWeight: FontWeight.w500),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Obx(() => ctrl.selectedAllergies.isNotEmpty ? Text('Selected: ${ctrl.selectedAllergies.join(', ')}', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)) : const SizedBox()),
       ],
     );
   }
@@ -431,128 +764,7 @@ class Register extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationStatus(RegisterCtrl ctrl) {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: _getStatusColor(ctrl).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _getStatusColor(ctrl).withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(_getStatusIcon(ctrl), color: _getStatusColor(ctrl), size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getStatusTitle(ctrl),
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(ctrl.locationStatus.value, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
-                ],
-              ),
-            ),
-            if (ctrl.locationStatus.value.contains('Failed') || ctrl.locationStatus.value.contains('denied'))
-              TextButton(
-                onPressed: ctrl.retryLocation,
-                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6)),
-                child: Text(
-                  'Retry',
-                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _getStatusColor(RegisterCtrl ctrl) {
-    if (ctrl.locationStatus.value.contains('successfully')) {
-      return AppTheme.successGreen;
-    } else if (ctrl.locationStatus.value.contains('Failed') || ctrl.locationStatus.value.contains('denied')) {
-      return AppTheme.emergencyRed;
-    } else {
-      return AppTheme.warningAmber;
-    }
-  }
-
-  IconData _getStatusIcon(RegisterCtrl ctrl) {
-    if (ctrl.locationStatus.value.contains('successfully')) {
-      return Icons.check_circle_rounded;
-    } else if (ctrl.locationStatus.value.contains('Failed') || ctrl.locationStatus.value.contains('denied')) {
-      return Icons.error_outline_rounded;
-    } else {
-      return Icons.location_searching_rounded;
-    }
-  }
-
-  String _getStatusTitle(RegisterCtrl ctrl) {
-    if (ctrl.isGettingLocation.value) {
-      return 'Getting Location...';
-    } else if (ctrl.locationStatus.value.contains('successfully')) {
-      return 'Location Found';
-    } else if (ctrl.locationStatus.value.contains('Failed') || ctrl.locationStatus.value.contains('denied')) {
-      return 'Location Error';
-    } else {
-      return 'Location Status';
-    }
-  }
-
-  Widget _buildRegisterButton(RegisterCtrl ctrl, BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton(
-        onPressed: ctrl.isLoading.value ? null : ctrl.register,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryTeal,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
-          shadowColor: Colors.transparent,
-        ),
-        child: ctrl.isLoading.value
-            ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8))))
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.person_add_alt_1_rounded, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Create Account',
-                    style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  Widget _buildLoginRedirect(BuildContext context, RegisterCtrl ctrl) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Already have an account? ',
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.textSecondary),
-        ),
-        GestureDetector(
-          onTap: ctrl.goToLogin,
-          child: Text(
-            'Sign In',
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBackButton() {
+  Widget _buildBackButton(RegisterCtrl ctrl) {
     return Container(
       height: 45,
       width: 45,
@@ -562,8 +774,14 @@ class Register extends StatelessWidget {
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
         ),
-        onPressed: () => Get.back(),
-        icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+        onPressed: () {
+          if (ctrl.currentStep.value > 0) {
+            ctrl.previousStep();
+          } else {
+            Get.back();
+          }
+        },
+        icon: Icon(ctrl.currentStep.value > 0 ? Icons.arrow_back_ios_new : Icons.arrow_back_ios_new, size: 18),
         color: const Color(0xFF111827),
       ),
     );

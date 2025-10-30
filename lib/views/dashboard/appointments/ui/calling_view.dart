@@ -654,14 +654,7 @@ class _CallingViewState extends State<CallingView> with TickerProviderStateMixin
     }
     final endTime = DateTime.now();
     final duration = _startTime != null ? endTime.difference(_startTime!).inSeconds : 0;
-    CallData callData = CallData(
-      senderId: widget.sender.id,
-      senderName: widget.sender.name,
-      senderFCMToken: widget.sender.fcmToken,
-      callType: widget.callType,
-      status: CallStatus.ended,
-      channelName: widget.channelName,
-    );
+    CallData callData = CallData(senderId: widget.sender.id, senderName: widget.sender.name, senderFCMToken: "", callType: widget.callType, status: CallStatus.ended, channelName: widget.channelName);
     await _callService.leaveChannel();
     CallingService().closeNotification(widget.receiver.id.hashCode);
     CallingService().makeCall(widget.receiver.fcmToken, callData);

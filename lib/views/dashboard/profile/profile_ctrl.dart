@@ -1,68 +1,95 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:prime_health_patients/models/user_model.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/helper.dart';
+import 'package:prime_health_patients/utils/routes/route_name.dart';
 import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:prime_health_patients/views/auth/auth_service.dart';
+import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
 
 class ProfileCtrl extends GetxController {
-  var user = UserModel(
-    id: '1',
-    name: 'Patient Name',
-    email: 'patient@example.com',
-    mobile: '+91 98765 43210',
-    password: '********',
-    address: '123, Patient Address, City, State, 395009',
-    city: 'Surat',
-    state: 'Gujarat',
-    fcmToken: '',
-  ).obs;
+  var user = UserModel(id: '', name: '', email: '', mobileNo: '').obs;
+  var isLoading = false.obs;
   bool isEditMode = false;
   var avatar = Rx<File?>(null);
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController mobileController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
+  final TextEditingController countryController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController stateController = TextEditingController();
+  final TextEditingController dateOfBirthController = TextEditingController();
+  final TextEditingController bloodGroupController = TextEditingController();
+  final TextEditingController emergencyNameController = TextEditingController();
+  final TextEditingController emergencyMobileController = TextEditingController();
+
+  AuthService get authService => Get.find<AuthService>();
 
   @override
   void onInit() {
-    _loadUserData();
     super.onInit();
+    loadUserData();
   }
 
-  Future<void> _loadUserData() async {
+  @override
+  void onClose() {
+    nameController.dispose();
+    emailController.dispose();
+    countryController.dispose();
+    cityController.dispose();
+    stateController.dispose();
+    dateOfBirthController.dispose();
+    bloodGroupController.dispose();
+    emergencyNameController.dispose();
+    emergencyMobileController.dispose();
+    super.onClose();
+  }
+
+  Future<void> loadUserData() async {
+    try {
+      isLoading.value = true;
+      final patientData = await authService.getProfile();
+      if (patientData != null && patientData['patient'] != null) {
+        user.value = UserModel.fromJson(patientData['patient']);
+        await write(AppSession.userData, patientData['patient']);
+        _updateControllers();
+      } else {
+        _loadFromLocalStorage();
+      }
+    } catch (e) {
+      _loadFromLocalStorage();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _loadFromLocalStorage() async {
     final userData = await read(AppSession.userData);
     if (userData != null) {
-      user.value = UserModel(
-        id: "1",
-        name: userData["name"] ?? 'Patient Name',
-        email: userData["email"] ?? 'patient@example.com',
-        mobile: userData["mobile"] ?? '+91 98765 43210',
-        password: userData["password"] ?? '********',
-        address: userData["address"] ?? '123, Patient Address, City, State, 395009',
-        city: userData["city"] ?? 'Surat',
-        state: userData["state"] ?? 'Gujarat',
-        fcmToken: userData["fcmToken"] ?? '',
-      );
+      user.value = UserModel.fromJson(userData);
+      _updateControllers();
     }
+  }
+
+  void _updateControllers() {
     nameController.text = user.value.name;
     emailController.text = user.value.email;
-    mobileController.text = user.value.mobile;
     cityController.text = user.value.city;
     stateController.text = user.value.state;
-    addressController.text = user.value.address;
+    countryController.text = user.value.country;
+    dateOfBirthController.text = user.value.dateOfBirth ?? '';
+    bloodGroupController.text = user.value.bloodGroup ?? '';
+    emergencyNameController.text = user.value.emergencyName;
+    emergencyMobileController.text = user.value.emergencyMobile;
+    update();
   }
 
   void toggleEditMode() {
     isEditMode = !isEditMode;
-    if (!isEditMode) {
-      _loadUserData();
-    }
     update();
   }
 
@@ -70,16 +97,46 @@ class ProfileCtrl extends GetxController {
     final result = await helper.pickImage();
     if (result != null) {
       avatar.value = result;
+      final formData = dio.FormData.fromMap({});
+      formData.files.add(MapEntry('profileImage', await dio.MultipartFile.fromFile(avatar.value!.path, filename: 'profileImage.jpg')));
+      final success = await authService.updateProfile(formData);
+      if (success) {
+        await loadUserData();
+        final homeCtrl = Get.find<HomeCtrl>();
+        homeCtrl.loadUserData();
+        toaster.success('Profile updated successfully');
+      }
       update();
     }
   }
 
-  void saveProfile() {
-    if (_validateForm()) {
-      updateProfile(name: nameController.text, email: emailController.text, mobile: mobileController.text, city: cityController.text, state: stateController.text, address: addressController.text);
-      isEditMode = false;
-      update();
-      toaster.success('Profile updated successfully');
+  Future<void> saveProfile() async {
+    if (!_validateForm()) return;
+    try {
+      isLoading.value = true;
+      final request = {
+        "name": nameController.text.trim(),
+        "email": emailController.text.trim(),
+        "dateOfBirth": dateOfBirthController.text.trim(),
+        "gender": user.value.gender,
+        "bloodGroup": bloodGroupController.text.trim(),
+        "address": {"city": cityController.text.trim(), "state": stateController.text.trim(), "country": countryController.text.trim()},
+        "emergencyContact": {"name": emergencyNameController.text.trim(), "mobileNo": emergencyMobileController.text.trim()},
+        "allergies": user.value.allergies ?? [],
+      };
+      final success = await authService.updateProfile(request);
+      if (success) {
+        await loadUserData();
+        isEditMode = false;
+        update();
+        final homeCtrl = Get.find<HomeCtrl>();
+        homeCtrl.loadUserData();
+        toaster.success('Profile updated successfully');
+      }
+    } catch (e) {
+      toaster.error('Failed to update profile: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -96,48 +153,36 @@ class ProfileCtrl extends GetxController {
       toaster.warning('Please enter a valid email');
       return false;
     }
-    if (mobileController.text.isEmpty) {
-      toaster.warning('Please enter your mobile number');
+    if (cityController.text.isEmpty) {
+      toaster.warning('Please enter your city');
       return false;
     }
-    if (!GetUtils.isPhoneNumber(mobileController.text)) {
-      toaster.warning('Please enter a valid mobile number');
+    if (stateController.text.isEmpty) {
+      toaster.warning('Please enter your state');
       return false;
     }
-    if (addressController.text.isEmpty) {
-      toaster.warning('Please enter your address');
+    if (countryController.text.isEmpty) {
+      toaster.warning('Please enter your country');
       return false;
     }
     return true;
   }
 
-  void updateProfile({required String name, required String email, required String mobile, required String city, required String state, required String address}) async {
+  Future<void> logout() async {
     try {
-      user.value = UserModel(id: user.value.id, name: name, email: email, mobile: mobile, password: user.value.password, city: city, state: state, address: address, fcmToken: user.value.fcmToken);
-      final request = {'name': name, 'email': email, 'password': user.value.password, 'mobile': mobile, 'city': city, 'state': state, 'address': address};
-      await write(AppSession.userData, request);
-      update();
+      await clearStorage();
+      Get.offAllNamed(AppRouteNames.login);
     } catch (e) {
-      toaster.error('Failed to update profile: $e');
+      toaster.error('Failed to logout: ${e.toString()}');
     }
   }
 
-  void logout() async {
+  Future<void> deleteAccount() async {
     try {
       await clearStorage();
-      update();
+      Get.offAllNamed(AppRouteNames.login);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to logout: $e', snackPosition: SnackPosition.BOTTOM);
-    }
-  }
-
-  void deleteAccount() async {
-    try {
-      await clearStorage();
-      user.value = UserModel(id: '', name: '', email: '', mobile: '', password: '', address: '', city: '', state: '', fcmToken: '');
-      update();
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to delete account: $e', snackPosition: SnackPosition.BOTTOM);
+      toaster.error('Failed to logout: ${e.toString()}');
     }
   }
 }

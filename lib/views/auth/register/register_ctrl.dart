@@ -1,112 +1,213 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:prime_health_patients/service/calling_service.dart';
-import 'package:prime_health_patients/utils/config/session.dart';
+import 'package:prime_health_patients/service/location_service.dart';
 import 'package:prime_health_patients/utils/routes/route_name.dart';
-import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:prime_health_patients/views/auth/auth_service.dart';
 
 class RegisterCtrl extends GetxController {
+  AuthService get authService => Get.find<AuthService>();
+
+  LocationService get locationService => Get.find<LocationService>();
+
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
-  final passwordCtrl = TextEditingController();
   final mobileCtrl = TextEditingController();
+  final dateOfBirthCtrl = TextEditingController();
   final cityCtrl = TextEditingController();
   final stateCtrl = TextEditingController();
-  final addressCtrl = TextEditingController();
+  final countryCtrl = TextEditingController();
+  final emergencyNameCtrl = TextEditingController();
+  final emergencyMobileCtrl = TextEditingController();
 
-  var isLoading = false.obs, isPasswordVisible = false.obs, isGettingLocation = false.obs;
-  var coordinates = '["0.0", "0.0"]'.obs, locationStatus = 'Fetching location...'.obs;
+  var isLoading = false.obs, isLocationLoading = false.obs;
+  var selectedGender = 'male'.obs, selectedBloodGroup = 'O+'.obs;
+  var selectedAllergies = <String>[].obs;
+  var currentStep = 0.obs;
 
-  void togglePasswordVisibility() => isPasswordVisible.toggle();
+  final List<String> genderOptions = ['male', 'female', 'other'];
+  final List<String> bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+  final List<String> commonAllergies = [
+    'Peanuts',
+    'Dust',
+    'Pollen',
+    'Shellfish',
+    'Eggs',
+    'Milk',
+    'Soy',
+    'Wheat',
+    'Fish',
+    'Tree Nuts',
+    'Penicillin',
+    'Sulfa Drugs',
+    'Aspirin',
+    'Insect Stings',
+    'Latex',
+  ];
+
+  void setGender(String gender) => selectedGender.value = gender;
+
+  void setBloodGroup(String bloodGroup) => selectedBloodGroup.value = bloodGroup;
+
+  void toggleAllergy(String allergy) {
+    if (selectedAllergies.contains(allergy)) {
+      selectedAllergies.remove(allergy);
+    } else {
+      selectedAllergies.add(allergy);
+    }
+  }
+
+  void goToStep(int step) {
+    if (step >= 0 && step <= 3) {
+      currentStep.value = step;
+    }
+  }
+
+  void nextStep() {
+    if (currentStep.value < 3) {
+      if (_validateCurrentStep()) {
+        currentStep.value++;
+      }
+    }
+  }
+
+  void previousStep() {
+    if (currentStep.value > 0) {
+      currentStep.value--;
+    }
+  }
+
+  bool _validateCurrentStep() {
+    switch (currentStep.value) {
+      case 0:
+        if (nameCtrl.text.isEmpty) {
+          toaster.warning('Please enter your full name');
+          return false;
+        }
+        if (emailCtrl.text.isEmpty) {
+          toaster.warning('Please enter your email');
+          return false;
+        }
+        if (!GetUtils.isEmail(emailCtrl.text)) {
+          toaster.warning('Please enter a valid email address');
+          return false;
+        }
+        if (mobileCtrl.text.isEmpty) {
+          toaster.warning('Please enter your mobile number');
+          return false;
+        }
+        if (!GetUtils.isPhoneNumber(mobileCtrl.text) || mobileCtrl.text.length != 10) {
+          toaster.warning('Please enter a valid 10-digit mobile number');
+          return false;
+        }
+        if (dateOfBirthCtrl.text.isEmpty) {
+          toaster.warning('Please select your date of birth');
+          return false;
+        }
+        return true;
+      case 1:
+        if (cityCtrl.text.isEmpty) {
+          toaster.warning('Please enter your city');
+          return false;
+        }
+        if (stateCtrl.text.isEmpty) {
+          toaster.warning('Please enter your state');
+          return false;
+        }
+        if (countryCtrl.text.isEmpty) {
+          toaster.warning('Please enter your country');
+          return false;
+        }
+        return true;
+      case 2:
+        if (emergencyNameCtrl.text.isEmpty) {
+          toaster.warning('Please enter emergency contact name');
+          return false;
+        }
+        if (emergencyMobileCtrl.text.isEmpty) {
+          toaster.warning('Please enter emergency contact mobile number');
+          return false;
+        }
+        if (!GetUtils.isPhoneNumber(emergencyMobileCtrl.text) || emergencyMobileCtrl.text.length != 10) {
+          toaster.warning('Please enter a valid 10-digit emergency contact number');
+          return false;
+        }
+        return true;
+
+      default:
+        return true;
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
-    _fetchCurrentLocation();
+    getCurrentLocation();
   }
 
   @override
   void onClose() {
     nameCtrl.dispose();
     emailCtrl.dispose();
-    passwordCtrl.dispose();
     mobileCtrl.dispose();
+    dateOfBirthCtrl.dispose();
     cityCtrl.dispose();
     stateCtrl.dispose();
-    addressCtrl.dispose();
+    countryCtrl.dispose();
+    emergencyNameCtrl.dispose();
+    emergencyMobileCtrl.dispose();
     super.onClose();
   }
 
-  Future<void> _fetchCurrentLocation() async {
-    isGettingLocation.value = true;
-    locationStatus.value = 'Checking location permissions...';
-
+  Future<void> getCurrentLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        locationStatus.value = 'Location services disabled';
-        toaster.warning('Please enable location services for better experience');
-        isGettingLocation.value = false;
-        return;
+      isLocationLoading(true);
+      final addressData = await locationService.getCurrentAddress();
+      if (addressData != null) {
+        countryCtrl.text = addressData['country'] ?? '';
+        stateCtrl.text = addressData['state'] ?? '';
+        cityCtrl.text = addressData['city'] ?? '';
+        toaster.success('Location fetched successfully');
       }
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        locationStatus.value = 'Requesting location permission...';
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          locationStatus.value = 'Location permission denied';
-          toaster.warning('Location permission is required for better service');
-          isGettingLocation.value = false;
-          return;
-        }
-      }
-      if (permission == LocationPermission.deniedForever) {
-        locationStatus.value = 'Location permission permanently denied';
-        toaster.warning('Please enable location permissions in app settings');
-        isGettingLocation.value = false;
-        return;
-      }
-      locationStatus.value = 'Getting your location...';
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 15));
-      coordinates.value = '["${position.latitude}", "${position.longitude}"]';
-      locationStatus.value = 'Location fetched successfully!';
     } catch (e) {
-      locationStatus.value = 'Failed to get location';
-      toaster.error('Location error: ${e.toString()}');
+      toaster.error('Failed to fetch location: ${e.toString()}');
     } finally {
-      isGettingLocation.value = false;
+      isLocationLoading(false);
     }
   }
 
-  Future<void> retryLocation() async {
-    await _fetchCurrentLocation();
+  Future<void> selectDateOfBirth(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 20)),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      dateOfBirthCtrl.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+    }
   }
 
   Future<void> register() async {
     if (!_validateForm()) return;
     isLoading.value = true;
     try {
-      String? getToken = await CallingService().getToken();
       final request = {
-        'name': nameCtrl.text.trim(),
-        'email': emailCtrl.text.trim(),
-        'password': passwordCtrl.text.trim(),
-        'mobile': mobileCtrl.text.trim(),
-        'city': cityCtrl.text.trim(),
-        'state': stateCtrl.text.trim(),
-        'coordinates': coordinates.value,
-        'address': addressCtrl.text.trim(),
-        'fcmToken': getToken ?? "",
-        'createdAt': DateTime.now().toIso8601String(),
+        "name": nameCtrl.text.trim(),
+        "email": emailCtrl.text.trim(),
+        "mobileNo": mobileCtrl.text.trim(),
+        "dateOfBirth": dateOfBirthCtrl.text.trim(),
+        "gender": selectedGender.value,
+        "address": {"country": countryCtrl.text.trim(), "city": cityCtrl.text.trim(), "state": stateCtrl.text.trim()},
+        "emergencyContact": {"name": emergencyNameCtrl.text.trim(), "mobileNo": emergencyMobileCtrl.text.trim()},
+        "bloodGroup": selectedBloodGroup.value,
+        "allergies": selectedAllergies.toList(),
       };
-      await Future.delayed(const Duration(seconds: 2));
-      await write(AppSession.token, 'patient_token_${DateTime.now().millisecondsSinceEpoch}');
-      await write(AppSession.userData, request);
-      toaster.success("Welcome to HealSync! Your account has been created successfully.");
-      _clearForm();
-      Get.offAllNamed(AppRouteNames.dashboard);
+      final success = await authService.register(request);
+      if (success) {
+        _clearForm();
+        Get.back();
+      }
     } catch (e) {
       toaster.error("Registration failed: ${e.toString()}");
     } finally {
@@ -115,57 +216,23 @@ class RegisterCtrl extends GetxController {
   }
 
   bool _validateForm() {
-    if (nameCtrl.text.isEmpty) {
-      toaster.warning('Please enter your full name');
-      return false;
-    }
-    if (emailCtrl.text.isEmpty) {
-      toaster.warning('Please enter your email');
-      return false;
-    }
-    if (!GetUtils.isEmail(emailCtrl.text)) {
-      toaster.warning('Please enter a valid email address');
-      return false;
-    }
-    if (passwordCtrl.text.isEmpty) {
-      toaster.warning('Please enter your password');
-      return false;
-    }
-    if (passwordCtrl.text.length < 6) {
-      toaster.warning('Password must be at least 6 characters long');
-      return false;
-    }
-    if (mobileCtrl.text.isEmpty) {
-      toaster.warning('Please enter your mobile number');
-      return false;
-    }
-    if (!GetUtils.isPhoneNumber(mobileCtrl.text) || mobileCtrl.text.length != 10) {
-      toaster.warning('Please enter a valid 10-digit mobile number');
-      return false;
-    }
-    if (cityCtrl.text.isEmpty) {
-      toaster.warning('Please enter your city');
-      return false;
-    }
-    if (stateCtrl.text.isEmpty) {
-      toaster.warning('Please enter your state');
-      return false;
-    }
-    if (addressCtrl.text.isEmpty) {
-      toaster.warning('Please enter your address');
-      return false;
-    }
-    return true;
+    return _validateCurrentStep();
   }
 
   void _clearForm() {
     nameCtrl.clear();
     emailCtrl.clear();
-    passwordCtrl.clear();
     mobileCtrl.clear();
+    dateOfBirthCtrl.clear();
+    countryCtrl.clear();
     cityCtrl.clear();
     stateCtrl.clear();
-    addressCtrl.clear();
+    emergencyNameCtrl.clear();
+    emergencyMobileCtrl.clear();
+    selectedAllergies.clear();
+    selectedGender.value = 'male';
+    selectedBloodGroup.value = 'O+';
+    currentStep.value = 0;
   }
 
   void goToLogin() => Get.toNamed(AppRouteNames.login);

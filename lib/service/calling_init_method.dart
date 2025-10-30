@@ -83,27 +83,10 @@ class CallingInitMethod {
             CallingService().closeNotification(callData.senderId.hashCode);
             final userData = await read(AppSession.userData);
             if (userData != null) {
-              UserModel userModel = UserModel(
-                id: "1",
-                name: userData["name"] ?? 'Dr. John Smith',
-                fcmToken: userData["fcmToken"] ?? '',
-                email: '',
-                mobile: '',
-                password: '',
-                city: '',
-                state: '',
-                address: '',
-              );
+              UserModel userModel = UserModel(id: "1", name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
               CallingService().makeCall(
                 callData.senderFCMToken,
-                CallData(
-                  senderId: userModel.id,
-                  senderName: userModel.name,
-                  senderFCMToken: userModel.fcmToken,
-                  callType: callData.callType,
-                  status: CallStatus.rejected,
-                  channelName: callData.channelName,
-                ),
+                CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: "", callType: callData.callType, status: CallStatus.rejected, channelName: callData.channelName),
               );
             }
             Get.back();
@@ -123,12 +106,8 @@ class CallingInitMethod {
       id: "1",
       name: userData["name"] ?? 'Dr. John Smith',
       email: userData["email"] ?? 'john.smith@example.com',
-      mobile: userData["mobile"] ?? '+91 98765 43210',
-      password: userData["password"] ?? '********',
-      fcmToken: userData["fcmToken"] ?? '',
-      city: '',
-      state: '',
-      address: '',
+      mobileNo: userData["mobile"] ?? '+91 98765 43210',
+      address: {},
     );
     if (context.mounted) {
       await Navigator.of(context).push(

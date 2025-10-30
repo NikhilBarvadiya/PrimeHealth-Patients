@@ -1,42 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:prime_health_patients/service/calling_service.dart';
-import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/routes/route_name.dart';
-import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:prime_health_patients/views/auth/auth_service.dart';
 
 class LoginCtrl extends GetxController {
-  final emailCtrl = TextEditingController();
-  final passwordCtrl = TextEditingController();
-  var isLoading = false.obs, isPasswordVisible = false.obs;
+  final mobileCtrl = TextEditingController();
+  var isLoading = false.obs;
 
-  void togglePasswordVisibility() => isPasswordVisible.toggle();
+  AuthService get authService => Get.find<AuthService>();
 
   Future<void> login() async {
-    if (emailCtrl.text.isEmpty) {
-      return toaster.warning('Please enter your email');
+    if (mobileCtrl.text.isEmpty) {
+      return toaster.warning('Please enter your mobile number');
     }
-    if (!GetUtils.isEmail(emailCtrl.text)) {
-      return toaster.warning('Please enter a valid email');
-    }
-    if (passwordCtrl.text.isEmpty) {
-      return toaster.warning('Please enter your password');
-    }
-    if (passwordCtrl.text.length < 6) {
-      return toaster.warning('Password must be at least 6 characters');
+    if (!GetUtils.isPhoneNumber(mobileCtrl.text)) {
+      return toaster.warning('Please enter a valid mobile number');
     }
     isLoading.value = true;
     try {
-      String? getToken = await CallingService().getToken();
-      final request = {'email': emailCtrl.text.trim(), 'password': passwordCtrl.text.trim(), 'fcmToken': getToken ?? ""};
-      await write(AppSession.token, DateTime.now().toIso8601String());
-      await write(AppSession.userData, request);
-      toaster.success("Welcome to your health journey!");
-      Get.offAllNamed(AppRouteNames.dashboard);
+      final loginRequest = {'mobileNo': mobileCtrl.text.trim()};
+      final loginResponse = await authService.login(loginRequest);
+      if (loginResponse != null && loginResponse['patientId'] != null) {
+        Get.toNamed(AppRouteNames.verifyOtp, arguments: {'mobileNo': mobileCtrl.text.trim(), 'patientId': loginResponse['patientId']});
+      }
+    } catch (err) {
+      toaster.error('Login error: ${err.toString()}');
     } finally {
-      emailCtrl.clear();
-      passwordCtrl.clear();
       isLoading.value = false;
     }
   }

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:prime_health_patients/utils/routes/route_name.dart';
 import 'package:prime_health_patients/views/auth/login/login.dart';
+import 'package:prime_health_patients/views/auth/otp_verification/otp_verification.dart';
 import 'package:prime_health_patients/views/auth/register/register.dart';
 import 'package:prime_health_patients/views/auth/splash/splash.dart';
 import 'package:prime_health_patients/views/dashboard/dashboard.dart';
@@ -15,6 +16,10 @@ class AppRouteMethods {
     getPage(name: AppRouteNames.splash, page: () => const Splash()),
     getPage(name: AppRouteNames.noInternet, page: () => const NoInternet()),
     getPage(name: AppRouteNames.login, page: () => const Login()),
+    GetPage(
+      name: AppRouteNames.verifyOtp,
+      page: () => OtpVerification(mobileNo: Get.arguments['mobileNo'], patientId: Get.arguments['patientId']),
+    ),
     getPage(name: AppRouteNames.register, page: () => const Register()),
     getPage(name: AppRouteNames.dashboard, page: () => const Dashboard()),
   ];
