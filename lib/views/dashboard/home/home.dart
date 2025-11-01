@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/models/doctor_model.dart';
 import 'package:prime_health_patients/models/patient_request_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
+import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists.dart';
 import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
@@ -17,65 +18,68 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverAppBar(
-          elevation: 0,
-          toolbarHeight: 65,
-          backgroundColor: Colors.white,
-          pinned: true,
-          floating: true,
-          automaticallyImplyLeading: false,
-          title: Obx(
-            () => Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+    return RefreshIndicator(
+      onRefresh: () async => await ctrl.getAPICalling(),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            elevation: 0,
+            toolbarHeight: 65,
+            backgroundColor: Colors.white,
+            pinned: true,
+            floating: true,
+            automaticallyImplyLeading: false,
+            title: Obx(
+              () => Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Good ${_getGreeting()}!',
+                    style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    ctrl.userName.value,
+                    style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: Badge(
+                    smallSize: 8,
+                    backgroundColor: AppTheme.emergencyRed,
+                    child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary, size: 26),
+                  ),
+                  onPressed: () => Get.to(() => Notifications()),
+                ),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Good ${_getGreeting()}!',
-                  style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  ctrl.userName.value,
-                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                ),
+                _buildBannerSection(),
+                const SizedBox(height: 12),
+                _buildSearchSection(),
+                const SizedBox(height: 12),
+                _buildServicesSection(),
+                const SizedBox(height: 12),
+                _buildDoctorsByCategory(),
+                const SizedBox(height: 12),
+                _buildAppointmentsSection(),
+                const SizedBox(height: 32),
               ],
             ),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: IconButton(
-                icon: Badge(
-                  smallSize: 8,
-                  backgroundColor: AppTheme.emergencyRed,
-                  child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary, size: 26),
-                ),
-                onPressed: () => Get.to(() => Notifications()),
-              ),
-            ),
-          ],
-        ),
-        SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBannerSection(),
-              const SizedBox(height: 12),
-              _buildSearchSection(),
-              const SizedBox(height: 12),
-              _buildServicesSection(),
-              const SizedBox(height: 12),
-              _buildDoctorsByCategory(),
-              const SizedBox(height: 12),
-              _buildAppointmentsSection(),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -181,9 +185,9 @@ class Home extends StatelessWidget {
           const SizedBox(height: 12),
           TextField(
             readOnly: true,
-            onTap: () => ctrl.viewAllServices(),
+            onTap: () => Get.to(() => SpecialistsList()),
             decoration: InputDecoration(
-              hintText: 'Search doctors, services, specialties...',
+              hintText: 'Search doctors',
               hintStyle: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight),
               prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondary),
               filled: true,
@@ -376,7 +380,7 @@ class Home extends StatelessWidget {
                       ),
                       child: ClipOval(
                         child: CachedNetworkImage(
-                          imageUrl: doctor.image,
+                          imageUrl: APIConfig.resourceBaseURL + doctor.profileImage.toString(),
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: AppTheme.backgroundLight,

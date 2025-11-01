@@ -3,12 +3,17 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/models/doctor_model.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
+import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists_ctrl.dart';
-import 'package:prime_health_patients/views/dashboard/doctors/ui/doctor_details.dart';
 
-class SpecialistsList extends StatelessWidget {
-  SpecialistsList({super.key});
+class SpecialistsList extends StatefulWidget {
+  const SpecialistsList({super.key});
 
+  @override
+  State<SpecialistsList> createState() => _SpecialistsListState();
+}
+
+class _SpecialistsListState extends State<SpecialistsList> {
   final SpecialistsCtrl ctrl = Get.put(SpecialistsCtrl());
 
   @override
@@ -28,7 +33,7 @@ class SpecialistsList extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 60, bottom: 20, left: 20, right: 20),
+      padding: const EdgeInsets.only(top: 50, bottom: 20, left: 20, right: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
@@ -62,7 +67,7 @@ class SpecialistsList extends StatelessWidget {
                         icon: Icon(Icons.close_rounded, color: AppTheme.textSecondary),
                         onPressed: () => ctrl.onSearchChanged(''),
                       )
-                    : SizedBox.shrink(),
+                    : const SizedBox.shrink(),
               ),
               filled: true,
               fillColor: AppTheme.backgroundLight,
@@ -80,64 +85,35 @@ class SpecialistsList extends StatelessWidget {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: ctrl.specializations.length,
-              itemBuilder: (context, index) {
-                final specialization = ctrl.specializations[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(specialization, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-                    selected: ctrl.selectedSpecialization.value == specialization,
-                    onSelected: (selected) => ctrl.onSpecializationChanged(specialization),
-                    backgroundColor: Colors.white,
-                    selectedColor: AppTheme.primaryTeal.withOpacity(0.1),
-                    checkmarkColor: AppTheme.primaryTeal,
-                    labelStyle: TextStyle(color: ctrl.selectedSpecialization.value == specialization ? AppTheme.primaryTeal : AppTheme.textSecondary),
-                    side: BorderSide(color: ctrl.selectedSpecialization.value == specialization ? AppTheme.primaryTeal : AppTheme.borderColor),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Text(
-                'Sort by:',
-                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(width: 8),
-              Obx(
-                () => DropdownButton<String>(
-                  value: ctrl.sortBy.value,
-                  icon: Icon(Icons.arrow_drop_down_rounded, color: AppTheme.primaryTeal),
-                  underline: const SizedBox(),
-                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textPrimary, fontWeight: FontWeight.w500),
-                  onChanged: (value) => ctrl.onSortChanged(value!),
-                  items: [_buildSortItem('Rating', 'rating'), _buildSortItem('Experience', 'experience'), _buildSortItem('Fee: Low to High', 'fee'), _buildSortItem('Distance', 'distance')],
+      child: Obx(
+        () => SizedBox(
+          height: 40,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: ctrl.specializations.length,
+            itemBuilder: (context, index) {
+              final specialization = ctrl.specializations[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(specialization, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
+                  selected: ctrl.selectedSpecialization.value == specialization,
+                  onSelected: (selected) {
+                    ctrl.onSpecializationChanged(specialization);
+                    setState(() {});
+                  },
+                  backgroundColor: Colors.white,
+                  selectedColor: AppTheme.primaryTeal.withOpacity(0.1),
+                  checkmarkColor: AppTheme.primaryTeal,
+                  labelStyle: TextStyle(color: ctrl.selectedSpecialization.value == specialization ? AppTheme.primaryTeal : AppTheme.textSecondary),
+                  side: BorderSide(color: ctrl.selectedSpecialization.value == specialization ? AppTheme.primaryTeal : AppTheme.borderColor),
                 ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: ctrl.clearFilters,
-                style: TextButton.styleFrom(foregroundColor: AppTheme.primaryTeal, padding: EdgeInsets.zero),
-                child: Text('Clear Filters', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-              ),
-            ],
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
-  }
-
-  DropdownMenuItem<String> _buildSortItem(String text, String value) {
-    return DropdownMenuItem(value: value, child: Text(text));
   }
 
   Widget _buildDoctorsList() {
@@ -172,7 +148,7 @@ class SpecialistsList extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => Get.to(() => DoctorDetails(doctor: doctor)),
+          onTap: () => Get.to(() => DoctorDetails(doctorId: doctor.id)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -181,7 +157,6 @@ class SpecialistsList extends StatelessWidget {
                 _buildDoctorImage(doctor),
                 const SizedBox(width: 12),
                 Expanded(child: _buildDoctorInfo(doctor)),
-                _buildFavoriteButton(doctor),
               ],
             ),
           ),
@@ -202,7 +177,7 @@ class SpecialistsList extends StatelessWidget {
           ),
           child: ClipOval(
             child: Image.network(
-              doctor.image,
+              doctor.profileImage ?? 'https://via.placeholder.com/80',
               fit: BoxFit.cover,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
@@ -252,11 +227,11 @@ class SpecialistsList extends StatelessWidget {
           children: [
             Icon(Icons.star_rounded, color: Colors.amber, size: 16),
             const SizedBox(width: 4),
-            Text(doctor.ratingText, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(doctor.rating.toStringAsFixed(1), style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(width: 12),
             Icon(Icons.work_outline_rounded, color: AppTheme.textLight, size: 14),
             const SizedBox(width: 4),
-            Text(doctor.experienceText, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
+            Text('${doctor.experience} years', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
           ],
         ),
         const SizedBox(height: 6),
@@ -281,34 +256,26 @@ class SpecialistsList extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
               child: Text(
-                doctor.feeText,
+                '\$${doctor.consultationFee.toStringAsFixed(0)}',
                 style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
               ),
             ),
             const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.backgroundLight,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppTheme.borderColor),
+            if (doctor.distance != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.backgroundLight,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppTheme.borderColor),
+                ),
+                child: Text('${doctor.distance!.toStringAsFixed(1)} km', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
               ),
-              child: Text(doctor.distanceText, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
-            ),
+            ],
           ],
         ),
       ],
     );
-  }
-
-  Widget _buildFavoriteButton(DoctorModel doctor) {
-    return Obx(() {
-      final isFavorite = ctrl.doctors.firstWhere((d) => d.id == doctor.id).isFavorite;
-      return IconButton(
-        onPressed: () => ctrl.toggleFavorite(doctor.id),
-        icon: Icon(isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: isFavorite ? AppTheme.emergencyRed : AppTheme.textLight, size: 24),
-      );
-    });
   }
 
   Widget _buildEmptyState() {
@@ -324,17 +291,6 @@ class SpecialistsList extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text('Try adjusting your filters or search terms', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight)),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: ctrl.clearFilters,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text('Clear Filters', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-          ),
         ],
       ),
     );

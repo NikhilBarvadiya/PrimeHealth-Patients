@@ -1,67 +1,37 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:prime_health_patients/models/doctor_model.dart';
 import 'package:prime_health_patients/models/patient_request_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/storage.dart';
+import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/appointment_details.dart';
 import 'package:prime_health_patients/views/dashboard/dashboard_ctrl.dart';
-import 'package:prime_health_patients/views/dashboard/doctors/ui/doctor_details.dart';
+import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/service_details.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/slot_selection.dart';
 
 class HomeCtrl extends GetxController {
   var userName = ''.obs;
+  var isLoading = false.obs;
 
   var featuredDoctors = <DoctorModel>[].obs;
+  var pendingAppointments = <PatientRequestModel>[].obs;
+  var regularServices = <ServiceModel>[].obs;
 
-  var pendingAppointments = <PatientRequestModel>[
-    PatientRequestModel(
-      id: '1',
-      patientId: '1',
-      therapistId: '1',
-      serviceName: 'Ortho Therapy',
-      serviceId: '1',
-      date: '2024-01-15',
-      time: '10:00 AM',
-      status: 'confirmed',
-      patientNotes: 'Regular checkup for shoulder pain',
-      requestedAt: DateTime.now().subtract(const Duration(days: 2)),
-      therapistName: 'Dr. Sarah Johnson',
-      therapistImage: '',
-      duration: '45 mins',
-      price: 1200.0,
-    ),
-    PatientRequestModel(
-      id: '2',
-      patientId: '1',
-      therapistId: '2',
-      serviceName: 'Neuro Therapy',
-      serviceId: '2',
-      date: '2024-01-18',
-      time: '02:30 PM',
-      status: 'pending',
-      patientNotes: 'First session for coordination issues',
-      requestedAt: DateTime.now().subtract(const Duration(days: 1)),
-      therapistName: 'Dr. Mike Wilson',
-      therapistImage: '',
-      duration: '60 mins',
-      price: 1500.0,
-    ),
-  ].obs;
-
-  var regularServices = [
-    ServiceModel(id: 1, name: 'Ortho Therapy', category: 'Orthopedic', description: 'Specialized treatment for bone and joint issues', icon: Icons.fitness_center, isActive: true, rate: 1200.0),
-    ServiceModel(id: 2, name: 'Neuro Therapy', category: 'Neurology', description: 'Treatment for neurological conditions', icon: Icons.psychology, isActive: true, rate: 1500.0),
-    ServiceModel(id: 3, name: 'Pain Management', category: 'Other', description: 'Advanced techniques to alleviate chronic pain', icon: Icons.healing_rounded, isActive: true, rate: 1400.0),
-    ServiceModel(id: 4, name: 'Pediatric Therapy', category: 'Pediatrics', description: 'Therapy for children developmental milestones', icon: Icons.child_care_rounded, isActive: true, rate: 1100.0),
-  ].obs;
+  AuthService get authService => Get.find<AuthService>();
 
   @override
   void onInit() {
     super.onInit();
     loadUserData();
+    getAPICalling();
+  }
+
+  getAPICalling() async {
+    await loadServices();
+    await loadPopularDoctors();
+    await loadAppointments();
   }
 
   Future<void> loadUserData() async {
@@ -69,21 +39,46 @@ class HomeCtrl extends GetxController {
     if (userData != null) {
       userName.value = userData['name'] ?? 'Patient';
     }
-    featuredDoctors.assignAll(sampleDoctors);
   }
 
-  void cancelAppointment(String appointmentId) {
-    final appointment = pendingAppointments.firstWhere((app) => app.id == appointmentId);
-    final index = pendingAppointments.indexWhere((app) => app.id == appointmentId);
-    pendingAppointments[index] = appointment.copyWith(status: 'cancelled');
-    update();
+  Future<void> loadServices() async {
+    try {
+      isLoading.value = true;
+      final servicesData = await authService.getServices({"page": 1, "limit": 10});
+      if (servicesData != null && servicesData['docs'] != null) {
+        final List<dynamic> data = servicesData['docs'];
+        regularServices.assignAll(data.map((item) => ServiceModel.fromApi(item)).toList());
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load services: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  void rescheduleAppointment(String appointmentId, String newDate, String newTime) {
-    final appointment = pendingAppointments.firstWhere((app) => app.id == appointmentId);
-    final index = pendingAppointments.indexWhere((app) => app.id == appointmentId);
-    pendingAppointments[index] = appointment.copyWith(date: newDate, time: newTime, status: 'pending');
-    update();
+  Future<void> loadPopularDoctors() async {
+    try {
+      isLoading.value = true;
+      final doctorsData = await authService.getPopularDoctors({"limit": 10});
+      if (doctorsData != null && doctorsData['doctors'] != null) {
+        final List<dynamic> data = doctorsData['doctors'];
+        featuredDoctors.assignAll(data.map((item) => DoctorModel.fromJson(item)).toList());
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load doctors: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loadAppointments() async {
+    try {
+      // TODO: Add appointments API call when available
+      // For now, keeping empty as per requirement to remove mock data
+      pendingAppointments.clear();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load appointments: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
   void viewAllServices() {
@@ -109,6 +104,6 @@ class HomeCtrl extends GetxController {
   }
 
   void viewDoctorProfile(DoctorModel doctor) {
-    Get.to(() => DoctorDetails(doctor: doctor));
+    Get.to(() => DoctorDetails(doctorId: doctor.id));
   }
 }

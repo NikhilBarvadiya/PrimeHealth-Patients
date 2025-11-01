@@ -270,9 +270,11 @@ class ServiceDetails extends StatelessWidget {
             children: [
               Icon(Icons.help_outline_rounded, color: AppTheme.primaryTeal, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Frequently Asked Questions',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              Expanded(
+                child: Text(
+                  'Frequently Asked Questions',
+                  style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
               ),
             ],
           ),

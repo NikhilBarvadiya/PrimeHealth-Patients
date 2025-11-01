@@ -5,123 +5,157 @@ import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'services_ctrl.dart';
 
-class Services extends StatelessWidget {
+class Services extends StatefulWidget {
   const Services({super.key});
 
+  @override
+  State<Services> createState() => _ServicesState();
+}
+
+class _ServicesState extends State<Services> {
   @override
   Widget build(BuildContext context) {
     final ServicesCtrl ctrl = Get.put(ServicesCtrl());
     final TextEditingController searchController = TextEditingController();
+    ever(ctrl.searchQuery, (String q) => searchController.text = q);
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            elevation: 0,
-            toolbarHeight: 80,
-            backgroundColor: Colors.white,
-            pinned: true,
-            floating: true,
-            automaticallyImplyLeading: false,
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Our Services',
-                  style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                ),
-                const SizedBox(height: 4),
-                Obx(() => Text('${ctrl.filteredServices.length} services available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary))),
-              ],
-            ),
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (scroll) {
+          if (scroll is ScrollEndNotification && scroll.metrics.pixels == scroll.metrics.maxScrollExtent) {
+            ctrl.loadMore();
+          }
+          return false;
+        },
+        child: CustomScrollView(physics: const BouncingScrollPhysics(), slivers: [_buildAppBar(ctrl), _buildSearchFilter(ctrl, searchController), _buildServiceList(ctrl)]),
+      ),
+    );
+  }
+
+  SliverAppBar _buildAppBar(ServicesCtrl ctrl) {
+    return SliverAppBar(
+      elevation: 0,
+      toolbarHeight: 80,
+      backgroundColor: Colors.white,
+      pinned: true,
+      floating: true,
+      automaticallyImplyLeading: false,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Our Services',
+            style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
           ),
-          SliverToBoxAdapter(child: _buildSearchFilterSection(ctrl, searchController)),
-          Obx(() {
-            if (ctrl.isLoading.value) {
-              return SliverToBoxAdapter(
-                child: Container(height: 200, alignment: Alignment.center, child: const CircularProgressIndicator()),
-              );
-            }
-            return ctrl.filteredServices.isEmpty
-                ? SliverFillRemaining(child: _buildEmptyState(ctrl))
-                : SliverPadding(
-                    padding: const EdgeInsets.all(20),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final service = ctrl.filteredServices[index];
-                        return _buildServiceCard(service, ctrl).paddingOnly(bottom: 12);
-                      }, childCount: ctrl.filteredServices.length),
-                    ),
-                  );
-          }),
+          const SizedBox(height: 4),
+          Text('${ctrl.filteredServices.length} services available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
         ],
       ),
     );
   }
 
-  Widget _buildSearchFilterSection(ServicesCtrl ctrl, TextEditingController searchController) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
-      child: Column(
-        children: [
-          TextField(
-            controller: searchController,
-            decoration: InputDecoration(
-              hintText: 'Search services, specialties...',
-              hintStyle: GoogleFonts.inter(color: AppTheme.textLight),
-              prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 22),
-              suffixIcon: searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear_rounded, color: AppTheme.textSecondary, size: 20),
-                      onPressed: () {
-                        searchController.clear();
-                        ctrl.searchServices('');
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: AppTheme.backgroundLight,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+  Widget _buildSearchFilter(ServicesCtrl ctrl, TextEditingController searchCtrl) {
+    return SliverToBoxAdapter(
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
+        child: Column(
+          children: [
+            TextField(
+              controller: searchCtrl,
+              decoration: InputDecoration(
+                hintText: 'Search services, specialties...',
+                hintStyle: GoogleFonts.inter(color: AppTheme.textLight),
+                prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 22),
+                suffixIcon: searchCtrl.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear_rounded, color: AppTheme.textSecondary, size: 20),
+                        onPressed: () {
+                          searchCtrl.clear();
+                          ctrl.searchServices('');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: AppTheme.backgroundLight,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              style: GoogleFonts.inter(fontSize: 16),
+              onChanged: ctrl.searchServices,
             ),
-            style: GoogleFonts.inter(fontSize: 16),
-            onChanged: ctrl.searchServices,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: ctrl.categories.length,
-              itemBuilder: (context, index) {
-                final category = ctrl.categories[index];
-                return Obx(
-                  () => Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(category, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-                      selected: ctrl.selectedCategory.value == category,
-                      onSelected: (selected) => ctrl.filterByCategory(category),
-                      backgroundColor: Colors.white,
-                      selectedColor: AppTheme.primaryTeal.withOpacity(0.1),
-                      checkmarkColor: AppTheme.primaryTeal,
-                      labelStyle: TextStyle(color: ctrl.selectedCategory.value == category ? AppTheme.primaryTeal : AppTheme.textSecondary),
-                      side: BorderSide(color: ctrl.selectedCategory.value == category ? AppTheme.primaryTeal : AppTheme.borderColor),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 40,
+              child: Obx(() {
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: ctrl.categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = ctrl.categories[index];
+                    final isSelected = ctrl.selectedCategoryId.value == cat.id;
+                    return Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(cat.name, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          ctrl.filterByCategory(cat.id);
+                          setState(() {});
+                        },
+                        backgroundColor: Colors.white,
+                        selectedColor: AppTheme.primaryTeal.withOpacity(0.1),
+                        checkmarkColor: AppTheme.primaryTeal,
+                        labelStyle: TextStyle(color: isSelected ? AppTheme.primaryTeal : AppTheme.textSecondary),
+                        side: BorderSide(color: isSelected ? AppTheme.primaryTeal : AppTheme.borderColor),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    );
+                  },
                 );
-              },
+              }),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildServiceList(ServicesCtrl ctrl) {
+    return Obx(() {
+      if (ctrl.isLoading.value && ctrl.services.isEmpty) {
+        return SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
+      }
+      if (ctrl.services.isEmpty) {
+        return SliverFillRemaining(child: _buildEmptyState(ctrl));
+      }
+      return SliverPadding(
+        padding: const EdgeInsets.all(20),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            if (index >= ctrl.services.length) {
+              return _buildLoadMoreIndicator(ctrl);
+            }
+            final service = ctrl.services[index];
+            return _buildServiceCard(service, ctrl).paddingOnly(bottom: 12);
+          }, childCount: ctrl.services.length + (ctrl.hasMore.value ? 1 : 0)),
+        ),
+      );
+    });
+  }
+
+  Widget _buildLoadMoreIndicator(ServicesCtrl ctrl) {
+    return Obx(
+      () => ctrl.isLoadingMore.value
+          ? Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          : SizedBox.shrink(),
     );
   }
 
@@ -130,7 +164,7 @@ class Services extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: Offset(0, 2))],
       ),
       child: Material(
         color: Colors.white,
@@ -144,14 +178,14 @@ class Services extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  spacing: 12.0,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(color: service.isActive ? AppTheme.primaryTeal.withOpacity(0.1) : AppTheme.textLight.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
                       child: Icon(service.icon, color: service.isActive ? AppTheme.primaryTeal : AppTheme.textLight, size: 20),
                     ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +223,7 @@ class Services extends StatelessWidget {
                         decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(10)),
                         child: IconButton(
                           onPressed: () => ctrl.bookService(service),
-                          icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                          icon: Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
                           padding: EdgeInsets.zero,
                         ),
                       )
@@ -222,25 +256,12 @@ class Services extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
+          padding: EdgeInsets.symmetric(horizontal: 40),
           child: Text(
             'Try adjusting your search terms or browse our full catalog',
             style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight),
             textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: () {
-            ctrl.clearFilters();
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryTeal,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-          ),
-          child: Text('View All Services', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         ),
       ],
     );

@@ -1,127 +1,102 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:prime_health_patients/models/service_model.dart';
+import 'package:prime_health_patients/models/category_model.dart';
+import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/service_details.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/slot_selection.dart';
 
 class ServicesCtrl extends GetxController {
-  var isLoading = false.obs;
-  var services = <ServiceModel>[].obs, filteredServices = <ServiceModel>[].obs;
-  var searchQuery = ''.obs, selectedCategory = 'All'.obs;
+  final isLoading = false.obs, isLoadingMore = false.obs, hasMore = true.obs;
 
-  final List<String> categories = ['All', 'Orthopedic', 'Neurology', 'Pediatrics', 'Physiotherapy', 'Cardiology', 'Dermatology', 'Wellness'];
+  final services = <ServiceModel>[].obs, filteredServices = <ServiceModel>[].obs;
+  final categories = <CategoryModel>[].obs;
+
+  final searchQuery = ''.obs;
+  final selectedCategoryId = Rxn<String>();
+  final currentPage = 1.obs;
+  final limit = 10;
+
+  AuthService get authService => Get.find<AuthService>();
 
   @override
   void onInit() {
     super.onInit();
-    loadServices();
+    loadCategories();
+    loadServices(initial: true);
   }
 
-  Future<void> loadServices() async {
-    isLoading.value = true;
-    await Future.delayed(const Duration(seconds: 1));
-    services.assignAll([
-      ServiceModel(
-        id: 1,
-        name: 'Orthopedic Therapy',
-        description: 'Specialized treatment for bone and joint issues, fractures, and musculoskeletal disorders.',
-        icon: Icons.fitness_center,
-        isActive: true,
-        rate: 1200.0,
-        category: 'Orthopedic',
-      ),
-      ServiceModel(
-        id: 2,
-        name: 'Neurology Consultation',
-        description: 'Expert care for neurological conditions, brain and nervous system disorders.',
-        icon: Icons.psychology,
-        isActive: true,
-        rate: 1500.0,
-        category: 'Neurology',
-      ),
-      ServiceModel(
-        id: 3,
-        name: 'Pediatric Care',
-        description: 'Comprehensive healthcare services for children and adolescents.',
-        icon: Icons.child_care_rounded,
-        isActive: true,
-        rate: 1000.0,
-        category: 'Pediatrics',
-      ),
-      ServiceModel(
-        id: 4,
-        name: 'Physical Therapy',
-        description: 'Rehabilitation and mobility improvement through specialized exercises.',
-        icon: Icons.accessible_rounded,
-        isActive: true,
-        rate: 800.0,
-        category: 'Physiotherapy',
-      ),
-      ServiceModel(
-        id: 5,
-        name: 'Cardiac Consultation',
-        description: 'Heart health assessment and cardiovascular disease management.',
-        icon: Icons.favorite_rounded,
-        isActive: false,
-        rate: 2000.0,
-        category: 'Cardiology',
-      ),
-      ServiceModel(
-        id: 6,
-        name: 'Skin Care Treatment',
-        description: 'Advanced dermatological treatments for various skin conditions.',
-        icon: Icons.spa_rounded,
-        isActive: true,
-        rate: 900.0,
-        category: 'Dermatology',
-      ),
-      ServiceModel(
-        id: 7,
-        name: 'Mental Wellness',
-        description: 'Counseling and therapy for mental health and emotional well-being.',
-        icon: Icons.psychology_rounded,
-        isActive: true,
-        rate: 1300.0,
-        category: 'Wellness',
-      ),
-      ServiceModel(
-        id: 8,
-        name: 'Sports Medicine',
-        description: 'Injury prevention and treatment for athletes and active individuals.',
-        icon: Icons.sports_rounded,
-        isActive: false,
-        rate: 1100.0,
-        category: 'Orthopedic',
-      ),
-    ]);
-    filteredServices.assignAll(services);
-    isLoading.value = false;
+  Future<void> loadCategories() async {
+    try {
+      final response = await authService.getCategories();
+      if (response != null && response.isNotEmpty) {
+        final List<dynamic> list = response['categories'] ?? [];
+        categories.assignAll(list.map((e) => CategoryModel.fromJson(e)).toList());
+        categories.insert(0, CategoryModel(id: "", name: "All"));
+      }
+    } catch (e) {
+      toaster.error('Categories error: $e');
+    }
+  }
+
+  Future<void> loadServices({bool initial = false}) async {
+    if (initial) {
+      isLoading(true);
+      currentPage.value = 1;
+      hasMore.value = true;
+    } else if (!hasMore.value || isLoadingMore.value) {
+      return;
+    } else {
+      isLoadingMore(true);
+    }
+    try {
+      final Map<String, dynamic> payload = {
+        'page': currentPage.value,
+        'limit': limit,
+        if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
+        if (selectedCategoryId.value != null) 'category': selectedCategoryId.value,
+      };
+      final response = await authService.getServices(payload);
+      if (response != null) {
+        final List<dynamic> docs = response['docs'] ?? [];
+        final int total = int.tryParse(response['totalDocs'].toString()) ?? 0;
+        final newServices = docs.map((e) => ServiceModel.fromApi(e)).toList();
+        if (initial) {
+          services.assignAll(newServices);
+        } else {
+          services.addAll(newServices);
+        }
+        hasMore.value = services.length < total;
+        currentPage.value++;
+      }
+    } catch (e) {
+      toaster.error('Services error: $e');
+    } finally {
+      isLoading(false);
+      isLoadingMore(false);
+    }
   }
 
   void searchServices(String query) {
-    searchQuery.value = query;
-    _applyFilters();
+    searchQuery.value = query.trim();
+    _resetAndReload();
   }
 
-  void filterByCategory(String category) {
-    selectedCategory.value = category;
-    _applyFilters();
+  void filterByCategory(String? categoryId) {
+    selectedCategoryId.value = categoryId;
+    _resetAndReload();
   }
 
-  void _applyFilters() {
-    var result = services.where((service) {
-      final matchesSearch =
-          searchQuery.value.isEmpty || service.name.toLowerCase().contains(searchQuery.value.toLowerCase()) || service.description.toLowerCase().contains(searchQuery.value.toLowerCase());
-      final matchesCategory = selectedCategory.value == 'All' || service.category == selectedCategory.value;
-      return matchesSearch && matchesCategory;
-    }).toList();
-    filteredServices.assignAll(result);
+  void _resetAndReload() {
+    currentPage.value = 1;
+    services.clear();
+    loadServices(initial: true);
   }
 
-  void clearFilters() {
-    searchQuery.value = '';
-    selectedCategory.value = 'All';
-    _applyFilters();
+  void loadMore() {
+    if (hasMore.value && !isLoadingMore.value) {
+      loadServices();
+    }
   }
 
   void bookDetails(ServiceModel service) {

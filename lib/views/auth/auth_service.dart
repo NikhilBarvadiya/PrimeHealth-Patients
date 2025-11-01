@@ -16,6 +16,14 @@ class AuthService extends GetxService {
         toaster.warning(response.message ?? 'Registration failed');
         return false;
       }
+
+      // Save token and user data after successful registration
+      if (response.data != null && response.data!['token'] != null) {
+        await write(AppSession.token, response.data!["token"]);
+        await write(AppSession.userData, response.data!["patient"]);
+        Get.offAllNamed(AppRouteNames.dashboard);
+      }
+
       toaster.success(response.message ?? 'Registration successful!');
       return true;
     } catch (err) {
@@ -31,6 +39,7 @@ class AuthService extends GetxService {
         toaster.warning(response.message ?? 'Failed to login');
         return null;
       }
+
       if (response.message == "OTP sent to your mobile number.") {
         return response.data;
       } else {
@@ -68,7 +77,9 @@ class AuthService extends GetxService {
         if (response.data?['token'] != null) {
           await write(AppSession.token, response.data!["token"]);
           await write(AppSession.userData, response.data!["patient"]);
+          Get.offAllNamed(AppRouteNames.dashboard);
         }
+        toaster.success('OTP verified successfully');
         return true;
       } else {
         toaster.warning(response.message ?? 'Invalid OTP');
@@ -111,6 +122,111 @@ class AuthService extends GetxService {
     } catch (err) {
       toaster.error('Profile update failed: ${err.toString()}');
       return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCategories() async {
+    try {
+      final response = await ApiManager().call(APIIndex.getCategories, {}, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load categories');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Categories loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getServices(dynamic request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getServices, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load services');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Services loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getPopularDoctors(dynamic request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getPopularDoctors, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load doctors');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Doctors loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> searchDoctors(dynamic request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.searchDoctors, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load doctors');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Doctors loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getDoctorDetails(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getDoctorDetails, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load doctor details');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Doctor details loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getDoctorSlots(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getDoctorSlots, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load doctor slots');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Doctor slots loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getDoctorReviews(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getDoctorReviews, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load doctor reviews');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Doctor reviews loading failed: ${err.toString()}');
+      return null;
     }
   }
 }
