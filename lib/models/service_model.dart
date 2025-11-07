@@ -6,10 +6,10 @@ class ServiceModel {
   final String description;
   final IconData icon;
   final bool isActive;
-  final double rate;
+  final String createdAt;
   final String category;
 
-  ServiceModel({required this.id, required this.name, required this.description, required this.icon, required this.isActive, required this.rate, required this.category});
+  ServiceModel({required this.id, required this.name, required this.description, required this.icon, required this.isActive, required this.createdAt, required this.category});
 
   factory ServiceModel.fromApi(Map<String, dynamic> json) {
     return ServiceModel(
@@ -18,7 +18,7 @@ class ServiceModel {
       description: json['description'] ?? '',
       icon: _mapIcon(json['category'] ?? 'General'),
       isActive: json['isActive'] == true,
-      rate: (json['rate'] ?? 0).toDouble(),
+      createdAt: json['createdAt'] ?? '',
       category: json['category'] ?? 'General',
     );
   }

@@ -16,8 +16,6 @@ class AuthService extends GetxService {
         toaster.warning(response.message ?? 'Registration failed');
         return false;
       }
-
-      // Save token and user data after successful registration
       if (response.data != null && response.data!['token'] != null) {
         await write(AppSession.token, response.data!["token"]);
         await write(AppSession.userData, response.data!["patient"]);
@@ -39,7 +37,6 @@ class AuthService extends GetxService {
         toaster.warning(response.message ?? 'Failed to login');
         return null;
       }
-
       if (response.message == "OTP sent to your mobile number.") {
         return response.data;
       } else {
@@ -226,6 +223,36 @@ class AuthService extends GetxService {
       }
     } catch (err) {
       toaster.error('Doctor reviews loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> bookAppointment(Map<String, dynamic> bookingData) async {
+    try {
+      final response = await ApiManager().call(APIIndex.bookAppointment, bookingData, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to book doctor appointment');
+        return null;
+      }
+    } catch (error) {
+      toaster.error('Book appointment error: $error');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getServiceDoctors(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getServiceDoctors, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to get services & doctors');
+        return null;
+      }
+    } catch (error) {
+      toaster.error('Get services & doctors error: $error');
       return null;
     }
   }

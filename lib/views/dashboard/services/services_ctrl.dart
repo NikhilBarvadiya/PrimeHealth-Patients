@@ -3,8 +3,8 @@ import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/models/category_model.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/booking.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/service_details.dart';
-import 'package:prime_health_patients/views/dashboard/services/ui/slot_selection.dart';
 
 class ServicesCtrl extends GetxController {
   final isLoading = false.obs, isLoadingMore = false.obs, hasMore = true.obs;
@@ -104,7 +104,7 @@ class ServicesCtrl extends GetxController {
 
   void bookService(ServiceModel service) {
     if (service.isActive) {
-      Get.to(() => SlotSelection(service: service));
+      Get.to(() => Booking(serviceId: service.id));
     }
   }
 }

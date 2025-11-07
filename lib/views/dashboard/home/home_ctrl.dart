@@ -6,10 +6,10 @@ import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/appointment_details.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/booking.dart';
 import 'package:prime_health_patients/views/dashboard/dashboard_ctrl.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/service_details.dart';
-import 'package:prime_health_patients/views/dashboard/services/ui/slot_selection.dart';
 
 class HomeCtrl extends GetxController {
   var userName = ''.obs;
@@ -100,7 +100,7 @@ class HomeCtrl extends GetxController {
   }
 
   void bookService(ServiceModel service) {
-    Get.to(() => SlotSelection(service: service));
+    Get.to(() => Booking(serviceId: service.id));
   }
 
   void viewDoctorProfile(PopularDoctorModel doctor) {

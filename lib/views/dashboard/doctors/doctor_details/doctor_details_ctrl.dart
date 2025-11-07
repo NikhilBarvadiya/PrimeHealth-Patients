@@ -5,6 +5,7 @@ import 'package:prime_health_patients/models/slot_model.dart';
 import 'package:prime_health_patients/models/review_model.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/booking.dart';
 
 class DoctorDetailsCtrl extends GetxController {
   var isLoading = true.obs;
@@ -72,8 +73,7 @@ class DoctorDetailsCtrl extends GetxController {
         averageRating.value = double.tryParse(response['averageRating'] ?? 0.0) ?? 0.0;
         totalReviews.value = int.tryParse(response['totalReviews'] ?? 0) ?? 0;
       }
-    } catch (error, s) {
-      print(s);
+    } catch (error) {
       toaster.error('Error loading doctor reviews: $error');
     }
   }
@@ -86,5 +86,11 @@ class DoctorDetailsCtrl extends GetxController {
     final startFormat = DateFormat('hh:mm a');
     final endFormat = DateFormat('hh:mm a');
     return '${startFormat.format(startTime)} - ${endFormat.format(endTime)}';
+  }
+
+  void bookService() {
+    if (doctor.value.id.isNotEmpty) {
+      Get.to(() => Booking(doctor: doctor.value));
+    }
   }
 }

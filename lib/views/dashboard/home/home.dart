@@ -283,8 +283,8 @@ class Home extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '₹${service.rate.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
+                    service.description,
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
                   ),
                   const Spacer(),
                   Container(

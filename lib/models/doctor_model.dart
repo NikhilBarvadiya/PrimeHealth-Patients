@@ -11,6 +11,7 @@ class DoctorModel {
   final int experience;
   final bool isActive;
   final bool isDeleted;
+  final dynamic service;
   final List<String> services;
   final List<dynamic> certifications;
   final int? availableSlots;
@@ -35,6 +36,7 @@ class DoctorModel {
     required this.isDeleted,
     required this.services,
     required this.certifications,
+    this.service,
     this.availableSlots,
     this.consultationCount,
     this.distance,
@@ -93,6 +95,7 @@ class DoctorModel {
       experience: int.tryParse(json['experience']?.toString() ?? '0') ?? 0,
       isActive: json['isActive'] ?? true,
       isDeleted: json['isDeleted'] ?? false,
+      service: json['services'],
       services: servicesList,
       certifications: List<dynamic>.from(json['certifications'] ?? []),
       availableSlots: json['availableSlots'] != null ? int.tryParse(json['availableSlots'].toString()) : null,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/services/services_ctrl.dart';
@@ -109,8 +110,8 @@ class ServiceDetails extends StatelessWidget {
                     Text('Starting from', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
                     const SizedBox(height: 4),
                     Text(
-                      '₹${service.rate.toStringAsFixed(0)}',
-                      style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
+                      DateFormat('MMM dd, yyyy').format(DateTime.parse(service.createdAt)),
+                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                     ),
                   ],
                 ),

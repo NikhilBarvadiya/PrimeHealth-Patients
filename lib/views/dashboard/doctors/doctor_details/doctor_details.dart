@@ -47,6 +47,30 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => ctrl.bookService(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryTeal,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.calendar_today_rounded, size: 18),
+                      const SizedBox(width: 8),
+                      Text('Book Appointment', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ).paddingOnly(left: 15, right: 15),
+              ),
+            ),
+            SliverToBoxAdapter(child: const SizedBox(height: 12)),
           ],
         );
       }),

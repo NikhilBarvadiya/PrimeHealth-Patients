@@ -1,6 +1,7 @@
   import 'package:flutter/material.dart';
   import 'package:get/get.dart';
   import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
   import 'package:prime_health_patients/models/service_model.dart';
   import 'package:prime_health_patients/utils/theme/light.dart';
   import 'services_ctrl.dart';
@@ -211,9 +212,13 @@
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Text(
-                        '₹${service.rate.toStringAsFixed(0)}',
-                        style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
+                      Icon(Icons.access_time, color: AppTheme.primaryTeal, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          DateFormat('MMM dd, yyyy').format(DateTime.parse(service.createdAt)),
+                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                        ),
                       ),
                       const Spacer(),
                       if (service.isActive)
