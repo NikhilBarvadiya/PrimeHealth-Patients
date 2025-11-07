@@ -16,6 +16,9 @@ class DoctorModel {
   final int? availableSlots;
   final int? consultationCount;
   final double? distance;
+  final double rating;
+  final String? clinicName;
+  final double? followUpFee;
 
   DoctorModel({
     required this.id,
@@ -35,36 +38,68 @@ class DoctorModel {
     this.availableSlots,
     this.consultationCount,
     this.distance,
+    this.rating = 4.5,
+    this.clinicName,
+    this.followUpFee,
   });
 
-  // Helper getters
   String get specialization => specialty;
-
-  double get rating => 4.5; // You might want to calculate this from reviews
 
   bool get isAvailable => availableSlots != null && availableSlots! > 0;
 
-  String get clinicName => 'Medical Center'; // Update based on your data
+  String get displayClinicName => clinicName ?? 'Medical Center';
+
+  String get experienceText => '$experience${experience == 1 ? ' year' : ' years'} exp.';
+
+  String get formattedFee => '\$${consultationFee.toStringAsFixed(0)}';
 
   factory DoctorModel.fromJson(Map<String, dynamic> json) {
+    String specialtyName = 'General Medicine';
+    if (json['specialty'] is Map) {
+      specialtyName = json['specialty']['name']?.toString() ?? 'General Medicine';
+    } else if (json['specialty'] is String) {
+      specialtyName = json['specialty'] ?? 'General Medicine';
+    }
+    double consultationFee = 0.0;
+    double? followUpFee;
+    if (json['pricing'] is Map) {
+      consultationFee = double.tryParse(json['pricing']['consultationFee']?.toString() ?? '0') ?? 0.0;
+      followUpFee = double.tryParse(json['pricing']['followUpFee']?.toString() ?? '0') ?? 0.0;
+    } else {
+      consultationFee = double.tryParse(json['consultationFee']?.toString() ?? '0') ?? 0.0;
+    }
+    List<String> servicesList = [];
+    if (json['services'] is List) {
+      servicesList = List<String>.from(
+        json['services'].map((s) {
+          if (s is Map) return s['name']?.toString() ?? '';
+          return s.toString();
+        }),
+      );
+    } else if (json['services'] is Map) {
+      servicesList = [json['services']['name']?.toString() ?? ''];
+    }
     return DoctorModel(
       id: json['_id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown Doctor',
       email: json['email']?.toString() ?? '',
       mobileNo: json['mobileNo']?.toString() ?? '',
       license: json['license']?.toString() ?? '',
-      specialty: json['specialty'] is Map ? json['specialty']['name']?.toString() ?? 'General Medicine' : json['specialty']?.toString() ?? 'General Medicine',
-      bio: json['bio']?.toString() ?? '',
+      specialty: specialtyName,
+      bio: json['bio']?.toString() ?? 'No bio available',
       profileImage: json['profileImage']?.toString(),
-      consultationFee: double.tryParse(json['pricing']?['consultationFee']?.toString() ?? '0') ?? double.tryParse(json['consultationFee']?.toString() ?? '0') ?? 0.0,
+      consultationFee: consultationFee,
+      followUpFee: followUpFee,
       experience: int.tryParse(json['experience']?.toString() ?? '0') ?? 0,
       isActive: json['isActive'] ?? true,
       isDeleted: json['isDeleted'] ?? false,
-      services: List<String>.from(json['services']?.map((s) => s['name']?.toString() ?? '') ?? []),
+      services: servicesList,
       certifications: List<dynamic>.from(json['certifications'] ?? []),
       availableSlots: json['availableSlots'] != null ? int.tryParse(json['availableSlots'].toString()) : null,
       consultationCount: json['consultationCount'] != null ? int.tryParse(json['consultationCount'].toString()) : null,
       distance: double.tryParse(json['distance']?.toString() ?? '0'),
+      rating: double.tryParse(json['rating']?.toString() ?? '4.5') ?? 4.5,
+      clinicName: json['clinicName']?.toString(),
     );
   }
 
@@ -86,7 +121,9 @@ class DoctorModel {
     int? availableSlots,
     int? consultationCount,
     double? distance,
-    bool? isFavorite,
+    double? rating,
+    String? clinicName,
+    double? followUpFee,
   }) {
     return DoctorModel(
       id: id ?? this.id,
@@ -106,6 +143,9 @@ class DoctorModel {
       availableSlots: availableSlots ?? this.availableSlots,
       consultationCount: consultationCount ?? this.consultationCount,
       distance: distance ?? this.distance,
+      rating: rating ?? this.rating,
+      clinicName: clinicName ?? this.clinicName,
+      followUpFee: followUpFee ?? this.followUpFee,
     );
   }
 }

@@ -8,7 +8,7 @@ class APIIndex {
   static const String getServices = 'get-services'; // done
   static const String getCategories = 'get-categories'; // done
   static const String getPopularDoctors = 'get-popular-doctors'; // done
-  static const String searchDoctors = 'search-doctors';
+  static const String searchDoctors = 'search-doctors'; // done
   static const String getDoctorDetails = 'get-doctor-details';
   static const String getDoctorSlots = 'get-doctor-slots';
   static const String getDoctorReviews = 'get-doctor-reviews';
