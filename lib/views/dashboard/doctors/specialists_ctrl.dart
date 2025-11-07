@@ -6,6 +6,7 @@ import 'package:prime_health_patients/views/auth/auth_service.dart';
 
 class SpecialistsCtrl extends GetxController {
   final isLoading = false.obs, isLoadingCategory = false.obs, isLoadingMore = false.obs, hasMore = true.obs;
+  final showAvailableOnly = false.obs;
   final doctors = <DoctorModel>[].obs, filteredDoctors = <DoctorModel>[].obs;
   final categories = <CategoryModel>[].obs;
   final searchQuery = ''.obs, selectedCategoryId = ''.obs;
@@ -54,13 +55,17 @@ class SpecialistsCtrl extends GetxController {
       isLoadingMore(true);
     }
     try {
-      final Map<String, dynamic> request = {'page': currentPage.value, 'limit': 15, "isAvailable": false};
+      final Map<String, dynamic> request = {'page': currentPage.value, 'limit': 15};
       if (searchQuery.value.isNotEmpty) {
         request['search'] = searchQuery.value;
       }
       if (selectedCategoryId.value != "All") {
         request['speciality'] = selectedCategoryId.value;
       }
+      if (showAvailableOnly.value) {
+        request['isAvailable'] = true;
+      }
+
       final response = await _authService.searchDoctors(request);
       if (response != null && response['docs'] != null) {
         final List<dynamic> docs = response['docs'];
@@ -85,6 +90,11 @@ class SpecialistsCtrl extends GetxController {
       isLoading(false);
       isLoadingMore(false);
     }
+  }
+
+  void toggleAvailabilityFilter(bool value) {
+    showAvailableOnly.value = value;
+    _resetAndReload();
   }
 
   void filterByCategory(String categoryId) {

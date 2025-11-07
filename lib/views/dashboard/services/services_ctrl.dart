@@ -12,8 +12,7 @@ class ServicesCtrl extends GetxController {
   final services = <ServiceModel>[].obs, filteredServices = <ServiceModel>[].obs;
   final categories = <CategoryModel>[].obs;
 
-  final searchQuery = ''.obs;
-  final selectedCategoryId = Rxn<String>();
+  final searchQuery = ''.obs, selectedCategoryId = ''.obs;
   final currentPage = 1.obs;
   final limit = 10;
 
@@ -54,7 +53,7 @@ class ServicesCtrl extends GetxController {
         'page': currentPage.value,
         'limit': limit,
         if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
-        if (selectedCategoryId.value != null) 'category': selectedCategoryId.value,
+        if (selectedCategoryId.value.isNotEmpty) 'category': selectedCategoryId.value,
       };
       final response = await authService.getServices(payload);
       if (response != null) {
@@ -82,7 +81,7 @@ class ServicesCtrl extends GetxController {
     _resetAndReload();
   }
 
-  void filterByCategory(String? categoryId) {
+  void filterByCategory(String categoryId) {
     selectedCategoryId.value = categoryId;
     _resetAndReload();
   }

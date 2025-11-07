@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:prime_health_patients/models/doctor_model.dart';
 import 'package:prime_health_patients/models/patient_request_model.dart';
+import 'package:prime_health_patients/models/popular_doctor_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
@@ -349,87 +349,94 @@ class Home extends StatelessWidget {
     );
   }
 
-  Widget _buildDoctorCard(DoctorModel doctor) {
+  Widget _buildDoctorCard(PopularDoctorModel doctor) {
+    final String? imageUrl = doctor.profileImage;
+    final String displayImageUrl = imageUrl != null && imageUrl.isNotEmpty ? APIConfig.resourceBaseURL + imageUrl : '';
     return Container(
       width: 160,
       margin: const EdgeInsets.only(right: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => ctrl.viewDoctorProfile(doctor),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.2), width: 2),
-                      ),
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: APIConfig.resourceBaseURL + doctor.profileImage.toString(),
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: AppTheme.backgroundLight,
-                            child: Icon(Icons.person, color: AppTheme.textLight, size: 30),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: AppTheme.backgroundLight,
-                            child: Icon(Icons.person, color: AppTheme.textLight, size: 30),
-                          ),
-                        ),
-                      ),
+          onTap: () => ctrl.viewDoctorProfile(doctor),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.2), width: 2),
+                    ),
+                    child: ClipOval(
+                      child: displayImageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: displayImageUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: AppTheme.backgroundLight,
+                                child: const Icon(Icons.person, color: AppTheme.textLight, size: 30),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: AppTheme.backgroundLight,
+                                child: const Icon(Icons.person, color: AppTheme.textLight, size: 30),
+                              ),
+                            )
+                          : Container(
+                              color: AppTheme.backgroundLight,
+                              child: const Icon(Icons.person, color: AppTheme.textLight, size: 30),
+                            ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    doctor.name,
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    doctor.specialization,
-                    style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        doctor.rating.toString(),
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  doctor.name,
+                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  doctor.bio,
+                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      doctor.avgRating.toStringAsFixed(1),
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: doctor.totalBookings > 0 ? AppTheme.successGreen.withOpacity(0.1) : AppTheme.emergencyRed.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: doctor.isAvailable ? AppTheme.successGreen.withOpacity(0.1) : AppTheme.emergencyRed.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                        child: Text(
-                          doctor.isAvailable ? 'Available' : 'Busy',
-                          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: doctor.isAvailable ? AppTheme.successGreen : AppTheme.emergencyRed),
-                        ),
+                      child: Text(
+                        doctor.totalBookings > 0 ? 'Available' : 'Busy',
+                        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: doctor.totalBookings > 0 ? AppTheme.successGreen : AppTheme.emergencyRed),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -544,6 +551,7 @@ class Home extends StatelessWidget {
 
   Widget _buildEmptyState(String title, String subtitle, IconData icon) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,

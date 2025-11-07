@@ -1,10 +1,10 @@
-// views/dashboard/doctors/doctor_details/doctor_details.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:prime_health_patients/models/slot_model.dart';
 import 'package:prime_health_patients/models/review_model.dart';
+import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details_ctrl.dart';
 
@@ -22,8 +22,8 @@ class _DoctorDetailsState extends State<DoctorDetails> {
 
   @override
   void initState() {
-    ctrl.loadDoctorDetails(widget.doctorId);
     super.initState();
+    ctrl.loadDoctorDetails(widget.doctorId);
   }
 
   @override
@@ -37,13 +37,13 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            _buildAppBar(ctrl),
+            _buildAppBar(),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [_buildBasicInfo(ctrl), const SizedBox(height: 24), _buildTabBar(ctrl), const SizedBox(height: 20), _buildTabContent(ctrl), const SizedBox(height: 32)],
+                  children: [_buildBasicInfo(), const SizedBox(height: 24), _buildTabBar(), const SizedBox(height: 20), _buildTabContent(), const SizedBox(height: 32)],
                 ),
               ),
             ),
@@ -57,7 +57,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     return const Center(child: CircularProgressIndicator());
   }
 
-  SliverAppBar _buildAppBar(DoctorDetailsCtrl ctrl) {
+  SliverAppBar _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 300,
       flexibleSpace: FlexibleSpaceBar(
@@ -66,7 +66,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           children: [
             Obx(
               () => Image.network(
-                ctrl.doctor.value.profileImage ?? 'https://via.placeholder.com/300',
+                APIConfig.resourceBaseURL + ctrl.doctor.value.profileImage.toString(),
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
@@ -104,7 +104,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildBasicInfo(DoctorDetailsCtrl ctrl) {
+  Widget _buildBasicInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -114,7 +114,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         ),
         const SizedBox(height: 4),
         Text(
-          ctrl.doctor.value.specialization,
+          ctrl.doctor.value.email,
           style: GoogleFonts.inter(fontSize: 16, color: AppTheme.primaryTeal, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
@@ -149,7 +149,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
             ),
             const Spacer(),
             Text(
-              '\$${ctrl.doctor.value.consultationFee.toStringAsFixed(0)}',
+              '₹${ctrl.doctor.value.consultationFee.toStringAsFixed(0)}',
               style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
             ),
             Text('/consultation', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
@@ -175,14 +175,14 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildTabBar(DoctorDetailsCtrl ctrl) {
+  Widget _buildTabBar() {
     return Container(
       decoration: BoxDecoration(color: AppTheme.backgroundLight, borderRadius: BorderRadius.circular(12)),
-      child: Row(children: [_buildTab(ctrl, 0, 'About'), _buildTab(ctrl, 1, 'Availability'), _buildTab(ctrl, 2, 'Reviews')]),
+      child: Row(children: [_buildTab(0, 'About'), _buildTab(1, 'Availability'), _buildTab(2, 'Reviews')]),
     );
   }
 
-  Widget _buildTab(DoctorDetailsCtrl ctrl, int index, String text) {
+  Widget _buildTab(int index, String text) {
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -204,22 +204,22 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildTabContent(DoctorDetailsCtrl ctrl) {
+  Widget _buildTabContent() {
     return Obx(() {
       switch (ctrl.selectedTab.value) {
         case 0:
-          return _buildAboutTab(ctrl);
+          return _buildAboutTab();
         case 1:
-          return _buildAvailabilityTab(ctrl);
+          return _buildAvailabilityTab();
         case 2:
-          return _buildReviewsTab(ctrl);
+          return _buildReviewsTab();
         default:
-          return _buildAboutTab(ctrl);
+          return _buildAboutTab();
       }
     });
   }
 
-  Widget _buildAboutTab(DoctorDetailsCtrl ctrl) {
+  Widget _buildAboutTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -241,7 +241,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           Wrap(spacing: 8, runSpacing: 8, children: ctrl.doctor.value.services.map((service) => _buildServiceChip(service)).toList()),
           const SizedBox(height: 20),
         ],
-        _buildStatsSection(ctrl),
+        _buildStatsSection(),
       ],
     );
   }
@@ -261,7 +261,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildStatsSection(DoctorDetailsCtrl ctrl) {
+  Widget _buildStatsSection() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -273,7 +273,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem('${ctrl.doctor.value.consultationCount ?? 0}+', 'Patients'),
+          _buildStatItem('${ctrl.doctor.value.consultationCount}+', 'Patients'),
           _buildStatItem('${ctrl.doctor.value.experience}+', 'Years Exp'),
           _buildStatItem(ctrl.doctor.value.rating.toStringAsFixed(1), 'Rating'),
         ],
@@ -294,7 +294,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildAvailabilityTab(DoctorDetailsCtrl ctrl) {
+  Widget _buildAvailabilityTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -307,13 +307,13 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           if (ctrl.availableSlots.isEmpty) {
             return _buildEmptyState('No available slots for today');
           }
-          return Column(children: ctrl.availableSlots.map((slot) => _buildSlotItem(ctrl, slot)).toList());
+          return Column(children: ctrl.availableSlots.map((slot) => _buildSlotItem(slot)).toList());
         }),
       ],
     );
   }
 
-  Widget _buildSlotItem(DoctorDetailsCtrl ctrl, SlotModel slot) {
+  Widget _buildSlotItem(SlotModel slot) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
@@ -352,7 +352,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildReviewsTab(DoctorDetailsCtrl ctrl) {
+  Widget _buildReviewsTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -375,7 +375,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
               ],
             ),
             const Spacer(),
-            _buildRatingProgress(ctrl),
+            _buildRatingProgress(),
           ],
         ),
         const SizedBox(height: 20),
@@ -389,7 +389,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildRatingProgress(DoctorDetailsCtrl ctrl) {
+  Widget _buildRatingProgress() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -423,7 +423,10 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 20, backgroundImage: review.patientImage.isNotEmpty ? NetworkImage(review.patientImage) : const AssetImage('assets/images/default_avatar.png') as ImageProvider),
+              CircleAvatar(
+                radius: 20,
+                backgroundImage: review.patientImage.isNotEmpty ? NetworkImage(APIConfig.resourceBaseURL + review.patientImage) : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -456,6 +459,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
 
   Widget _buildEmptyState(String message) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(40),
       child: Column(
         children: [

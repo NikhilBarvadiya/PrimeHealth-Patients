@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:prime_health_patients/models/doctor_model.dart';
 import 'package:prime_health_patients/models/patient_request_model.dart';
+import 'package:prime_health_patients/models/popular_doctor_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/storage.dart';
@@ -15,7 +15,7 @@ class HomeCtrl extends GetxController {
   var userName = ''.obs;
   var isLoading = false.obs;
 
-  var featuredDoctors = <DoctorModel>[].obs;
+  var featuredDoctors = <PopularDoctorModel>[].obs;
   var pendingAppointments = <PatientRequestModel>[].obs;
   var regularServices = <ServiceModel>[].obs;
 
@@ -59,10 +59,10 @@ class HomeCtrl extends GetxController {
   Future<void> loadPopularDoctors() async {
     try {
       isLoading.value = true;
-      final doctorsData = await authService.getPopularDoctors({"limit": 10});
+      final doctorsData = await authService.getPopularDoctors({"page": 1, "limit": 10, "isAvailable": true});
       if (doctorsData != null && doctorsData['doctors'] != null) {
         final List<dynamic> data = doctorsData['doctors'];
-        featuredDoctors.assignAll(data.map((item) => DoctorModel.fromJson(item)).toList());
+        featuredDoctors.assignAll(data.map((item) => PopularDoctorModel.fromJson(item["doctor"])).toList());
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load doctors: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
@@ -103,7 +103,7 @@ class HomeCtrl extends GetxController {
     Get.to(() => SlotSelection(service: service));
   }
 
-  void viewDoctorProfile(DoctorModel doctor) {
+  void viewDoctorProfile(PopularDoctorModel doctor) {
     Get.to(() => DoctorDetails(doctorId: doctor.id));
   }
 }

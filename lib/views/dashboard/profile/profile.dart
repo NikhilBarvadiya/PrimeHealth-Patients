@@ -302,7 +302,7 @@ class Profile extends StatelessWidget {
                   value.isEmpty
                       ? 'Not set'
                       : label == "Date of Birth"
-                      ? DateFormat('MMM d, yyyy').format(DateTime.parse(value)).toString()
+                      ? DateFormat('MMM d, yyyy').format(DateTime.tryParse(value.toString()) ?? DateTime.now()).toString()
                       : value,
                   style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87),
                 ),

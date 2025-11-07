@@ -51,7 +51,7 @@ class DoctorDetailsCtrl extends GetxController {
     try {
       final request = {'doctorId': doctorId, 'date': DateTime.now().toIso8601String().split('T')[0]};
       final response = await _authService.getDoctorSlots(request);
-      if (response != null && response['slots'] != null) {
+      if (response != null && response['slots'] != null && response['slots'] != []) {
         final slotsList = List<Map<String, dynamic>>.from(response['slots']).map((slotData) => SlotModel.fromJson(slotData)).toList();
         availableSlots.assignAll(slotsList);
       }
@@ -65,14 +65,15 @@ class DoctorDetailsCtrl extends GetxController {
       final request = {'doctorId': doctorId, 'page': 1, 'limit': 10};
       final response = await _authService.getDoctorReviews(request);
       if (response != null) {
-        if (response['reviews'] != null && response['reviews']['docs'] != null) {
+        if (response['reviews'] != null && response['reviews']['docs'] != null && response['reviews']['docs'] != []) {
           final reviewsList = List<Map<String, dynamic>>.from(response['reviews']['docs']).map((reviewData) => ReviewModel.fromJson(reviewData)).toList();
           reviews.assignAll(reviewsList);
         }
-        averageRating.value = (response['averageRating'] ?? 0.0).toDouble();
-        totalReviews.value = (response['totalReviews'] ?? 0).toInt();
+        averageRating.value = double.tryParse(response['averageRating'] ?? 0.0) ?? 0.0;
+        totalReviews.value = int.tryParse(response['totalReviews'] ?? 0) ?? 0;
       }
-    } catch (error) {
+    } catch (error, s) {
+      print(s);
       toaster.error('Error loading doctor reviews: $error');
     }
   }

@@ -49,6 +49,41 @@ class _SpecialistsListState extends State<SpecialistsList> {
         },
         child: CustomScrollView(controller: _scrollController, physics: const BouncingScrollPhysics(), slivers: [_buildAppBar(), _buildSearchFilter(), _buildContent()]),
       ),
+      floatingActionButton: Obx(
+        () => Container(
+          padding: const EdgeInsets.only(top: 8, bottom: 8, left: 15, right: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.borderColor),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.event_available_rounded, size: 16, color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.textLight),
+              const SizedBox(width: 6),
+              Text(
+                'Available Now',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.textSecondary,
+                  fontWeight: ctrl.showAvailableOnly.value ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
+                  value: ctrl.showAvailableOnly.value,
+                  onChanged: ctrl.toggleAvailabilityFilter,
+                  activeColor: AppTheme.successGreen,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -63,7 +98,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
         style: ButtonStyle(
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-          backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.9)),
+          backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
         ),
         icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
         onPressed: () => Get.back(),
@@ -74,7 +109,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
           children: [
             Text(
               'Top Specialists',
-              style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
             ),
             const SizedBox(height: 4),
             Text('${ctrl.filteredDoctors.length} ${ctrl.filteredDoctors.length == 1 ? 'doctor' : 'doctors'} available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
@@ -189,7 +224,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
 
   Widget _buildDoctorsList() {
     return SliverPadding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: Get.height * .1),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
           if (index >= ctrl.filteredDoctors.length) {
@@ -273,19 +308,21 @@ class _SpecialistsListState extends State<SpecialistsList> {
             ),
           ),
         ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: doctor.isAvailable ? AppTheme.successGreen : AppTheme.emergencyRed,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
+        Obx(() {
+          return Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.emergencyRed,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 3),
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }
