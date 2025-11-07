@@ -382,7 +382,6 @@ class BookingDetails extends StatelessWidget {
 
   Widget _buildReviewSection(BookingDetailsCtrl ctrl, BookingModel booking) {
     final hasReview = booking.review != null && booking.review!.isNotEmpty;
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -490,11 +489,9 @@ class BookingDetails extends StatelessWidget {
   Widget _buildActionButtons(BookingDetailsCtrl ctrl, BookingModel booking) {
     final canCancel = booking.canCancel;
     final canReschedule = booking.canReschedule;
-
     if (!canCancel && !canReschedule) {
       return const SizedBox.shrink();
     }
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -522,7 +519,7 @@ class BookingDetails extends StatelessWidget {
           if (canReschedule)
             Expanded(
               child: ElevatedButton(
-                onPressed: () => _showRescheduleDialog(ctrl, booking),
+                onPressed: () => ctrl.showRescheduleDialog(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryTeal,
                   foregroundColor: Colors.white,
@@ -793,74 +790,6 @@ class BookingDetails extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: Text('Cancel', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  void _showRescheduleDialog(BookingDetailsCtrl ctrl, BookingModel booking) {
-    Get.dialog(
-      Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), shape: BoxShape.circle),
-                child: Icon(Icons.schedule_rounded, color: AppTheme.primaryTeal, size: 40),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Reschedule Booking',
-                style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Please contact our support team to reschedule your booking.',
-                style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Get.back(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.textSecondary,
-                        side: BorderSide(color: AppTheme.borderColor),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: Text('Cancel', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement contact support
-                        Get.back();
-                        Get.snackbar('Contact Support', 'Please call +91-XXXXXX-XXXX to reschedule', snackPosition: SnackPosition.BOTTOM);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryTeal,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: Text('Call Support', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],

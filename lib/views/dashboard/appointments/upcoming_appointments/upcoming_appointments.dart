@@ -102,13 +102,13 @@ class UpcomingAppointments extends StatelessWidget {
         itemCount: ctrl.appointments.length,
         itemBuilder: (context, index) {
           final appointment = ctrl.appointments[index];
-          return _buildAppointmentCard(appointment);
+          return _buildAppointmentCard(appointment, index);
         },
       ),
     );
   }
 
-  Widget _buildAppointmentCard(BookingModel appointment) {
+  Widget _buildAppointmentCard(BookingModel appointment, int index) {
     final statusColor = _getStatusColor(appointment.status);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -164,7 +164,7 @@ class UpcomingAppointments extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Divider(color: AppTheme.borderColor),
                   const SizedBox(height: 8),
-                  _buildActionButtons(appointment),
+                  _buildActionButtons(appointment, index),
                 ],
               ],
             ),
@@ -208,13 +208,13 @@ class UpcomingAppointments extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BookingModel appointment) {
+  Widget _buildActionButtons(BookingModel appointment, int index) {
     return Row(
       children: [
         if (appointment.canCancel) ...[
           Expanded(
             child: OutlinedButton(
-              onPressed: () => ctrl.showCancelDialog(appointment),
+              onPressed: () => ctrl.showCancelDialog(index),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.emergencyRed,
                 side: const BorderSide(color: AppTheme.emergencyRed),

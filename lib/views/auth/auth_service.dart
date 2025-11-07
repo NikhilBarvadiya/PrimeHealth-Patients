@@ -286,4 +286,34 @@ class AuthService extends GetxService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> rescheduleAppointment(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.rescheduleAppointment, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to reschedule appointment');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Reschedule failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> cancelAppointment(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.cancelAppointment, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to cancel appointment');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Cancel failed: ${err.toString()}');
+      return null;
+    }
+  }
 }

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:prime_health_patients/models/booking_model.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/reschedule_dialog.dart';
 
 class BookingDetailsCtrl extends GetxController {
   final String bookingId;
@@ -37,14 +38,23 @@ class BookingDetailsCtrl extends GetxController {
     await loadBookingDetails();
   }
 
-  void cancelBooking() {
-    // TODO: Implement cancel booking API
-    Get.snackbar('Coming Soon', 'Cancel booking feature will be available soon');
+  Future<void> cancelBooking() async {
+    try {
+      isLoading.value = true;
+      final bookingData = await authService.cancelAppointment({"bookingId": bookingId});
+      if (bookingData != null && bookingData['booking'] != null) {
+        booking.value = BookingModel.fromJson(bookingData['booking']);
+      }
+    } catch (e) {
+      toaster.error('Failed to cancel booking details: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  void rescheduleBooking() {
-    // TODO: Implement reschedule booking API
-    Get.snackbar('Coming Soon', 'Reschedule feature will be available soon');
+  void showRescheduleDialog() {
+    if (booking.value == null) return;
+    Get.dialog(RescheduleDialog(booking: booking.value!, onRescheduleSuccess: () => refreshBooking()), barrierDismissible: false);
   }
 
   void addReview(double rating, String comment) {
