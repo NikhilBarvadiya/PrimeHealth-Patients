@@ -18,4 +18,5 @@ class APIIndex {
   static const String getBookingDetails = 'get-booking-details';
   static const String rescheduleAppointment = 'reschedule-appointment';
   static const String cancelAppointment = 'cancel-appointment';
+  static const String getBookingHistory = 'get-booking-history';
 }

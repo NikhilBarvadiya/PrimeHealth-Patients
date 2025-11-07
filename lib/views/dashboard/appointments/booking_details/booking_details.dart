@@ -38,9 +38,15 @@ class BookingDetails extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.refresh_rounded, color: AppTheme.primaryTeal),
+                style: ButtonStyle(
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+                  backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
+                ),
+                icon: Icon(Icons.refresh_rounded, color: Colors.black87, size: 20),
                 onPressed: () => ctrl.refreshBooking(),
               ),
+              SizedBox(width: 10),
             ],
           ),
           body: Obx(() => _buildBody(context, ctrl)),

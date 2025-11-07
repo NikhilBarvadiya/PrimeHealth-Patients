@@ -272,6 +272,21 @@ class AuthService extends GetxService {
     }
   }
 
+  Future<Map<String, dynamic>?> getBookingHistory(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getBookingHistory, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load booking history');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Booking history loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> getBookingDetails(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getBookingDetails, request, ApiType.post);

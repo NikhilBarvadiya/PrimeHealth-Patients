@@ -1,170 +1,181 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:prime_health_patients/models/patient_request_model.dart';
-import 'package:prime_health_patients/views/dashboard/appointments/ui/appointment_details.dart';
+import 'package:intl/intl.dart';
+import 'package:prime_health_patients/models/booking_model.dart';
+import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:prime_health_patients/views/auth/auth_service.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/booking_details/booking_details.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/reschedule_dialog.dart';
 
 class AppointmentsCtrl extends GetxController {
   var selectedFilter = 'All'.obs;
-  final filters = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'];
+  var isLoading = false.obs, isRefreshing = false.obs, hasMore = true.obs;
+  var currentPage = 1.obs;
+  var scrollController = ScrollController();
 
-  var appointments = <PatientRequestModel>[
-    PatientRequestModel(
-      id: '1',
-      patientId: '1',
-      therapistId: '1',
-      serviceName: 'Orthopedic Therapy',
-      serviceId: '1',
-      date: '2024-01-15',
-      time: '10:00 AM',
-      status: 'completed',
-      patientNotes: 'Regular checkup for shoulder pain',
-      requestedAt: DateTime.now().subtract(Duration(days: 2)),
-      therapistName: 'Dr. Sarah Johnson',
-      therapistImage: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150',
-      duration: '45 mins',
-      price: 1500.0,
-      review: ReviewModel(
-        id: 'rev1',
-        appointmentId: '1',
-        patientId: '1',
-        therapistId: '1',
-        rating: 4.5,
-        comment: 'Dr. Sarah was very professional and helped me with my shoulder pain effectively.',
-        createdAt: DateTime.now().subtract(Duration(days: 1)),
-        patientName: 'John Doe',
-      ),
-    ),
-    PatientRequestModel(
-      id: '2',
-      patientId: '1',
-      therapistId: '2',
-      serviceName: 'Neuro Rehabilitation',
-      serviceId: '2',
-      date: '2024-01-18',
-      time: '02:30 PM',
-      status: 'completed',
-      patientNotes: 'First session for coordination issues',
-      requestedAt: DateTime.now().subtract(Duration(days: 1)),
-      therapistName: 'Dr. Mike Wilson',
-      therapistImage: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150',
-      duration: '60 mins',
-      price: 2000.0,
-    ),
-    PatientRequestModel(
-      id: '3',
-      patientId: '1',
-      therapistId: '3',
-      serviceName: 'Sports Therapy',
-      serviceId: '3',
-      date: '2024-01-20',
-      time: '11:00 AM',
-      status: 'completed',
-      patientNotes: 'Ankle injury recovery session',
-      requestedAt: DateTime.now().subtract(Duration(days: 5)),
-      therapistName: 'Dr. Emily Davis',
-      therapistImage: 'https://images.unsplash.com/photo-1594824947933-d0501ba2fe65?w=150',
-      duration: '45 mins',
-      price: 1800.0,
-      review: ReviewModel(
-        id: 'rev3',
-        appointmentId: '3',
-        patientId: '1',
-        therapistId: '3',
-        rating: 5.0,
-        comment: 'Excellent service! My ankle feels much better after just one session.',
-        createdAt: DateTime.now().subtract(Duration(days: 4)),
-        patientName: 'John Doe',
-      ),
-    ),
-    PatientRequestModel(
-      id: '4',
-      patientId: '1',
-      therapistId: '1',
-      serviceName: 'Pain Management',
-      serviceId: '4',
-      date: '2024-01-22',
-      time: '03:00 PM',
-      status: 'cancelled',
-      patientNotes: 'Back pain treatment',
-      requestedAt: DateTime.now().subtract(Duration(days: 3)),
-      therapistName: 'Dr. Sarah Johnson',
-      therapistImage: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150',
-      duration: '30 mins',
-      price: 1000.0,
-    ),
-    PatientRequestModel(
-      id: '5',
-      patientId: '1',
-      therapistId: '2',
-      serviceName: 'Neuro Therapy',
-      serviceId: '2',
-      date: '2024-01-25',
-      time: '09:30 AM',
-      status: 'confirmed',
-      patientNotes: 'Follow-up session',
-      requestedAt: DateTime.now().subtract(Duration(hours: 12)),
-      therapistName: 'Dr. Mike Wilson',
-      therapistImage: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150',
-      duration: '60 mins',
-      price: 1500.0,
-    ),
-  ].obs;
+  final filters = ['All', 'Scheduled', 'Confirmed', 'Completed', 'Cancelled', 'Rescheduled'];
 
-  List<PatientRequestModel> get filteredAppointments {
-    if (selectedFilter.value == 'All') {
-      return appointments;
+  DateTime? startDate, endDate;
+
+  var bookings = <BookingModel>[].obs;
+
+  AuthService get authService => Get.find<AuthService>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    _setupScrollController();
+    loadBookings();
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  void _setupScrollController() {
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        loadMore();
+      }
+    });
+  }
+
+  Future<void> loadBookings({bool loadMore = false}) async {
+    if (isLoading.value && !loadMore) return;
+    try {
+      if (!loadMore) {
+        isLoading.value = true;
+        currentPage.value = 1;
+        hasMore.value = true;
+        bookings.clear();
+      } else {
+        if (!hasMore.value) return;
+        currentPage.value++;
+      }
+      final request = _buildRequest();
+      Map<String, dynamic>? response = await authService.getBookingHistory(request);
+      if (response != null && response.isNotEmpty && response['docs'] != null) {
+        _handleResponse(response, loadMore);
+      } else {
+        hasMore.value = false;
+      }
+    } catch (e) {
+      toaster.error('Failed to load appointments: ${e.toString()}');
+      hasMore.value = false;
+    } finally {
+      isLoading.value = false;
+      isRefreshing.value = false;
     }
-    return appointments.where((appointment) => appointment.status == selectedFilter.value.toLowerCase()).toList();
+  }
+
+  Map<String, dynamic> _buildRequest() {
+    Map<String, dynamic> request = {'page': currentPage.value, 'limit': 10};
+    if (selectedFilter.value != 'All') {
+      request['status'] = _convertFilterToApiStatus(selectedFilter.value);
+    }
+    if (startDate != null) {
+      request['startDate'] = DateFormat('yyyy-MM-dd').format(startDate!);
+    }
+    if (endDate != null) {
+      request['endDate'] = DateFormat('yyyy-MM-dd').format(endDate!);
+    }
+    return request;
+  }
+
+  String _convertFilterToApiStatus(String filter) {
+    final statusMap = {'Scheduled': 'scheduled', 'Confirmed': 'confirmed', 'Completed': 'completed', 'Cancelled': 'cancelled', 'Rescheduled': 'rescheduled'};
+    return statusMap[filter] ?? filter.toLowerCase();
+  }
+
+  void _handleResponse(Map<String, dynamic> response, bool loadMore) {
+    final List<dynamic> data = response['docs'];
+    final newBookings = data.map((item) => BookingModel.fromJson(item)).toList();
+    if (loadMore) {
+      bookings.addAll(newBookings);
+    } else {
+      bookings.assignAll(newBookings);
+    }
+    final totalPages = int.tryParse(response['totalPages'].toString()) ?? 1;
+    hasMore.value = currentPage.value < totalPages;
+  }
+
+  Future<void> refreshBookings() async {
+    isRefreshing.value = true;
+    await loadBookings();
   }
 
   void changeFilter(String filter) {
     selectedFilter.value = filter;
+    loadBookings();
   }
 
-  void cancelAppointment(String appointmentId) {
-    final appointment = appointments.firstWhere((app) => app.id == appointmentId);
-    final index = appointments.indexWhere((app) => app.id == appointmentId);
-    appointments[index] = appointment.copyWith(status: 'cancelled');
-    update();
+  void setDateRange(DateTime? start, DateTime? end) {
+    startDate = start;
+    endDate = end;
+    loadBookings();
   }
 
-  void rescheduleAppointment(String appointmentId, String newDate, String newTime) {
-    final appointment = appointments.firstWhere((app) => app.id == appointmentId);
-    final index = appointments.indexWhere((app) => app.id == appointmentId);
-    appointments[index] = appointment.copyWith(date: newDate, time: newTime, status: 'pending');
-    update();
+  void clearDateFilter() {
+    startDate = null;
+    endDate = null;
+    loadBookings();
   }
 
-  void addReview(String appointmentId, double rating, String comment) {
-    final appointment = appointments.firstWhere((app) => app.id == appointmentId);
-    final index = appointments.indexWhere((app) => app.id == appointmentId);
-    final review = ReviewModel(
-      id: 'rev_${DateTime.now().millisecondsSinceEpoch}',
-      appointmentId: appointmentId,
-      patientId: appointment.patientId,
-      therapistId: appointment.therapistId,
-      rating: rating,
-      comment: comment,
-      createdAt: DateTime.now(),
-      patientName: 'You',
-    );
-    appointments[index] = appointment.copyWith(review: review);
-    update();
-    Get.snackbar('Review Submitted!', 'Thank you for your feedback', backgroundColor: Color(0xFF10B981), colorText: Colors.white);
+  List<BookingModel> get filteredBookings {
+    return bookings.toList();
   }
 
-  void updateReview(String appointmentId, double rating, String comment) {
-    final appointment = appointments.firstWhere((app) => app.id == appointmentId);
-    final index = appointments.indexWhere((app) => app.id == appointmentId);
-    if (appointment.review != null) {
-      final updatedReview = appointment.review!.copyWith(rating: rating, comment: comment);
-      appointments[index] = appointment.copyWith(review: updatedReview);
-      update();
-      Get.snackbar('Review Updated!', 'Your feedback has been updated', backgroundColor: Color(0xFF10B981), colorText: Colors.white);
+  Future<void> cancelBooking(String bookingId) async {
+    try {
+      final response = await authService.cancelAppointment({'bookingId': bookingId, 'reason': 'Patient requested cancellation'});
+      if (response != null) {
+        final index = bookings.indexWhere((booking) => booking.id == bookingId);
+        if (index != -1) {
+          bookings[index].status = 'cancelled';
+          bookings[index].cancelledBy = 'patient';
+          bookings[index].cancelledAt = DateTime.now();
+          update();
+        }
+        toaster.success('Appointment cancelled successfully');
+      }
+    } catch (e) {
+      toaster.error('Failed to cancel appointment: ${e.toString()}');
     }
   }
 
-  void viewAppointmentDetails(String appointmentId) {
-    Get.to(() => AppointmentDetails(appointmentId: appointmentId));
+  void showRescheduleDialog(BookingModel booking) {
+    Get.dialog(RescheduleDialog(booking: booking, onRescheduleSuccess: refreshBookings), barrierDismissible: false);
+  }
+
+  Future<void> addReview(String bookingId, double rating, String comment) async {
+    try {
+      final index = bookings.indexWhere((booking) => booking.id == bookingId);
+      if (index != -1) {
+        // bookings[index] = bookings[index].copyWith(rating: rating, review: comment);
+      }
+      toaster.success('Review submitted successfully');
+    } catch (e) {
+      toaster.error('Failed to submit review: ${e.toString()}');
+    }
+  }
+
+  void viewBookingDetails(String bookingId) {
+    Get.to(() => BookingDetails(bookingId: bookingId));
+  }
+
+  void loadMore() {
+    if (!isLoading.value && hasMore.value) {
+      loadBookings(loadMore: true);
+    }
+  }
+
+  bool shouldShowLoadMore(int index) {
+    return index == bookings.length && hasMore.value;
+  }
+
+  bool shouldShowEndOfList(int index) {
+    return index == bookings.length && !hasMore.value && bookings.isNotEmpty;
   }
 }
