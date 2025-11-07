@@ -13,5 +13,8 @@ class APIIndex {
   static const String getDoctorSlots = 'get-doctor-slots'; // done
   static const String getDoctorReviews = 'get-doctor-reviews'; // done
   static const String getServiceDoctors = 'get-service-Doctors'; // done
-  static const String bookAppointment = 'book-appointment';
+  static const String bookAppointment = 'book-appointment'; // done
+  static const String getUpcomingAppointments = 'get-upcoming-appointments';
+  static const String getBookingDetails = 'get-booking-details';
+  static const String rescheduleAppointment = 'reschedule-appointment';
 }

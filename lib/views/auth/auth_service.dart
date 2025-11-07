@@ -256,4 +256,34 @@ class AuthService extends GetxService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getUpcomingAppointments(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getUpcomingAppointments, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load upcoming appointments');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Upcoming appointments loading failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getBookingDetails(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getBookingDetails, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to load booking details');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Booking details loading failed: ${err.toString()}');
+      return null;
+    }
+  }
 }

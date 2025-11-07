@@ -2,14 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:prime_health_patients/models/patient_request_model.dart';
+import 'package:prime_health_patients/models/booking_model.dart';
 import 'package:prime_health_patients/models/popular_doctor_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists.dart';
 import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
-import 'package:prime_health_patients/views/dashboard/home/notifications/notifications.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
@@ -47,19 +46,6 @@ class Home extends StatelessWidget {
                 ],
               ),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: Badge(
-                    smallSize: 8,
-                    backgroundColor: AppTheme.emergencyRed,
-                    child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary, size: 26),
-                  ),
-                  onPressed: () => Get.to(() => Notifications()),
-                ),
-              ),
-            ],
           ),
           SliverToBoxAdapter(
             child: Column(
@@ -476,7 +462,8 @@ class Home extends StatelessWidget {
     );
   }
 
-  Widget _buildAppointmentCard(PatientRequestModel appointment) {
+  Widget _buildAppointmentCard(BookingModel appointment) {
+    final statusColor = _getStatusColor(appointment.status);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -488,46 +475,45 @@ class Home extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => ctrl.viewAppointmentDetails(appointment.id),
+          onTap: () => ctrl.viewAppointmentDetails(appointment.id.toString()),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Icon(Icons.calendar_today_rounded, color: AppTheme.primaryTeal, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        appointment.serviceName.toString(),
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(appointment.therapistName.toString(), style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
-                      const SizedBox(height: 4),
-                      Row(
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Icon(_getStatusIcon(appointment.status), color: statusColor, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.access_time_rounded, size: 14, color: AppTheme.textLight),
-                          const SizedBox(width: 4),
-                          Text('${appointment.date} • ${appointment.time}', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textLight)),
+                          Text(
+                            appointment.doctorName ?? 'Doctor',
+                            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(appointment.serviceName ?? 'Service', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                      child: Text(
+                        appointment.statusDisplay.toUpperCase(),
+                        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: statusColor),
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: _getStatusColor(appointment.status), borderRadius: BorderRadius.circular(8)),
-                  child: Text(
-                    appointment.status.toUpperCase(),
-                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white),
-                  ),
-                ),
+                const SizedBox(height: 12),
+                _buildDetailRow(appointment),
               ],
             ),
           ),
@@ -536,16 +522,75 @@ class Home extends StatelessWidget {
     );
   }
 
+  Widget _buildDetailRow(BookingModel appointment) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: AppTheme.backgroundLight, borderRadius: BorderRadius.circular(8)),
+      child: Row(
+        children: [
+          _buildDetailItem(Icons.calendar_today_rounded, appointment.formattedDate, AppTheme.textSecondary),
+          _buildDetailItem(Icons.access_time_rounded, appointment.formattedTime, AppTheme.textSecondary),
+          _buildDetailItem(Icons.medical_services_rounded, appointment.consultationType == 'in-person' ? 'In-Person' : 'Virtual', AppTheme.textSecondary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String text, Color color) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(fontSize: 12, color: color, fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'confirmed':
+      case 'scheduled':
         return AppTheme.successGreen;
       case 'pending':
         return AppTheme.warningAmber;
       case 'cancelled':
+      case 'no-show':
         return AppTheme.emergencyRed;
+      case 'completed':
+        return AppTheme.primaryTeal;
+      case 'rescheduled':
+        return AppTheme.warningAmber;
       default:
         return AppTheme.textLight;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'scheduled':
+        return Icons.schedule_rounded;
+      case 'confirmed':
+        return Icons.check_circle_rounded;
+      case 'completed':
+        return Icons.verified_rounded;
+      case 'cancelled':
+        return Icons.cancel_rounded;
+      case 'no-show':
+        return Icons.no_accounts_rounded;
+      case 'rescheduled':
+        return Icons.calendar_today_rounded;
+      default:
+        return Icons.calendar_today_rounded;
     }
   }
 

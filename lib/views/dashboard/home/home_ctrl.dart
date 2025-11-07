@@ -1,12 +1,13 @@
 import 'package:get/get.dart';
-import 'package:prime_health_patients/models/patient_request_model.dart';
+import 'package:prime_health_patients/models/booking_model.dart';
 import 'package:prime_health_patients/models/popular_doctor_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
-import 'package:prime_health_patients/views/dashboard/appointments/ui/appointment_details.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/booking_details/booking_details.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/booking.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/upcoming_appointments/upcoming_appointments.dart';
 import 'package:prime_health_patients/views/dashboard/dashboard_ctrl.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details.dart';
 import 'package:prime_health_patients/views/dashboard/services/ui/service_details.dart';
@@ -16,7 +17,7 @@ class HomeCtrl extends GetxController {
   var isLoading = false.obs;
 
   var featuredDoctors = <PopularDoctorModel>[].obs;
-  var pendingAppointments = <PatientRequestModel>[].obs;
+  var pendingAppointments = <BookingModel>[].obs;
   var regularServices = <ServiceModel>[].obs;
 
   AuthService get authService => Get.find<AuthService>();
@@ -73,11 +74,16 @@ class HomeCtrl extends GetxController {
 
   Future<void> loadAppointments() async {
     try {
-      // TODO: Add appointments API call when available
-      // For now, keeping empty as per requirement to remove mock data
-      pendingAppointments.clear();
+      isLoading.value = true;
+      final appointmentsData = await authService.getUpcomingAppointments({"page": 1, "limit": 10});
+      if (appointmentsData != null && appointmentsData['docs'] != null) {
+        final List<dynamic> data = appointmentsData['docs'];
+        pendingAppointments.assignAll(data.map((item) => BookingModel.fromJson(item)).toList());
+      }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load appointments: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -87,12 +93,11 @@ class HomeCtrl extends GetxController {
   }
 
   void viewAllAppointments() {
-    DashboardCtrl ctrl = Get.put(DashboardCtrl());
-    ctrl.changeTab(2);
+    Get.to(() => UpcomingAppointments());
   }
 
   void viewAppointmentDetails(String appointmentId) {
-    Get.to(() => AppointmentDetails(appointmentId: appointmentId));
+    Get.to(() => BookingDetails(bookingId: appointmentId));
   }
 
   void bookDetails(ServiceModel service) {
