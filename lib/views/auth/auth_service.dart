@@ -331,4 +331,34 @@ class AuthService extends GetxService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> addRatingReview(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.addRatingReview, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to add rating review');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Add rating review failed: ${err.toString()}');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> updateRatingReview(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.updateRatingReview, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to update rating review');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('Update rating review failed: ${err.toString()}');
+      return null;
+    }
+  }
 }

@@ -121,7 +121,13 @@ class UpcomingAppointments extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => Get.to(() => BookingDetails(bookingId: appointment.id!)),
+          onTap: () async {
+            BookingModel? bookingModel = await Get.to(() => BookingDetails(bookingId: appointment.id!));
+            if (bookingModel != null) {
+              ctrl.appointments[index] = bookingModel;
+              ctrl.update();
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

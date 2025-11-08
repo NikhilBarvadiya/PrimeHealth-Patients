@@ -34,7 +34,7 @@ class BookingDetails extends StatelessWidget {
                 backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
               ),
               icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-              onPressed: () => Get.back(),
+              onPressed: () => Get.back(result: ctrl.booking.value),
             ),
             actions: [
               IconButton(
@@ -406,6 +406,14 @@ class BookingDetails extends StatelessWidget {
                 'Session Review',
                 style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
               ),
+              const Spacer(),
+              if (hasReview)
+                IconButton(
+                  icon: Icon(Icons.edit_rounded, size: 18, color: AppTheme.primaryTeal),
+                  onPressed: () => _showEditReviewDialog(ctrl, booking),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -619,20 +627,25 @@ class BookingDetails extends StatelessWidget {
   void _showAddReviewDialog(BookingDetailsCtrl ctrl, BookingModel booking) {
     double rating = 0.0;
     final commentController = TextEditingController();
-
-    Get.dialog(_buildReviewDialog(ctrl, booking, rating, commentController), barrierDismissible: false);
+    Get.dialog(_buildReviewDialog(ctrl, booking, rating, commentController, isEdit: false), barrierDismissible: false);
   }
 
-  Widget _buildReviewDialog(BookingDetailsCtrl ctrl, BookingModel booking, double rating, TextEditingController commentController) {
+  void _showEditReviewDialog(BookingDetailsCtrl ctrl, BookingModel booking) {
+    double rating = booking.rating ?? 0.0;
+    final commentController = TextEditingController(text: booking.review ?? '');
+    Get.dialog(_buildReviewDialog(ctrl, booking, rating, commentController, isEdit: true), barrierDismissible: false);
+  }
+
+  Widget _buildReviewDialog(BookingDetailsCtrl ctrl, BookingModel booking, double rating, TextEditingController commentController, {bool isEdit = false}) {
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: StatefulBuilder(
-        builder: (context, setState) {
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+      child: ClipRRect(
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(24),
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -641,17 +654,14 @@ class BookingDetails extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Rate Your Experience',
+                  isEdit ? 'Edit Your Review' : 'Rate Your Experience',
                   style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'How was your session with ${booking.doctorName}?',
-                  style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
+                Text('How was your session with ${booking.doctorName}?', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
                 const SizedBox(height: 20),
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppTheme.backgroundLight,
@@ -673,7 +683,6 @@ class BookingDetails extends StatelessWidget {
                     valueLabelVisibility: true,
                     animationDuration: const Duration(milliseconds: 1000),
                     valueLabelPadding: const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
-                    valueLabelMargin: const EdgeInsets.only(right: 8),
                     starOffColor: AppTheme.borderColor,
                     starColor: AppTheme.warningAmber,
                   ),
@@ -683,6 +692,7 @@ class BookingDetails extends StatelessWidget {
                   controller: commentController,
                   minLines: 1,
                   maxLines: 3,
+                  style: TextStyle(fontSize: 12),
                   decoration: InputDecoration(
                     labelText: 'Your Review (Optional)',
                     labelStyle: GoogleFonts.inter(color: AppTheme.textSecondary),
@@ -709,17 +719,20 @@ class BookingDetails extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text('Cancel', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                        child: Text('Cancel', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: rating > 0
-                            ? () {
-                                ctrl.addReview(rating, commentController.text);
+                            ? () async {
                                 Get.back();
-                                Get.snackbar('Review Submitted', 'Thank you for your feedback!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppTheme.successGreen, colorText: Colors.white);
+                                if (isEdit) {
+                                  await ctrl.updateReview(rating, commentController.text);
+                                } else {
+                                  await ctrl.addReview(rating, commentController.text);
+                                }
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
@@ -728,15 +741,15 @@ class BookingDetails extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text('Submit Review', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                        child: Text(isEdit ? 'Update Review' : 'Submit Review', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

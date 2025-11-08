@@ -96,8 +96,15 @@ class HomeCtrl extends GetxController {
     Get.to(() => UpcomingAppointments());
   }
 
-  void viewAppointmentDetails(String appointmentId) {
-    Get.to(() => BookingDetails(bookingId: appointmentId));
+  Future<void> viewAppointmentDetails(String appointmentId) async {
+    BookingModel? bookingModel = await Get.to(() => BookingDetails(bookingId: appointmentId));
+    if (bookingModel != null) {
+      int index = pendingAppointments.indexWhere((e) => e.id == appointmentId);
+      if (index != -1) {
+        pendingAppointments[index] = bookingModel;
+        update();
+      }
+    }
   }
 
   void bookDetails(ServiceModel service) {

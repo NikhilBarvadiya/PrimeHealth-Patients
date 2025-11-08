@@ -94,7 +94,7 @@ class BookingModel {
       cancelledAt: json['cancelledAt'] != null ? DateTime.parse(json['cancelledAt'].toString()) : null,
       rescheduledFrom: json['rescheduledFrom']?.toString(),
       rescheduledTo: json['rescheduledTo']?.toString(),
-      rating: json['rating']?.toDouble(),
+      rating: double.tryParse(json['rating'].toString()) ?? 0.0,
       review: json['review']?.toString(),
       createdAt: DateTime.parse(json['createdAt']?.toString() ?? DateTime.now().toString()),
       updatedAt: DateTime.parse(json['updatedAt']?.toString() ?? DateTime.now().toString()),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -313,7 +314,7 @@ class Appointments extends StatelessWidget {
           ),
           if (!hasReview) ...[
             ElevatedButton(
-              onPressed: () => _showAddReviewDialog(booking.id!),
+              onPressed: () => _showAddReviewDialog(ctrl, booking),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryTeal,
                 foregroundColor: Colors.white,
@@ -321,6 +322,13 @@ class Appointments extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: Text('Add Review', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w500)),
+            ),
+          ] else ...[
+            IconButton(
+              icon: Icon(Icons.edit_rounded, size: 16, color: AppTheme.primaryTeal),
+              onPressed: () => _showEditReviewDialog(ctrl, booking),
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
             ),
           ],
         ],
@@ -495,8 +503,134 @@ class Appointments extends StatelessWidget {
     Get.dialog(DateFilterDialog(onFilterApplied: (start, end) => ctrl.setDateRange(start, end), initialStartDate: ctrl.startDate, initialEndDate: ctrl.endDate));
   }
 
-  void _showAddReviewDialog(String bookingId) {
-    // Implementation from previous code...
+  void _showAddReviewDialog(AppointmentsCtrl ctrl, BookingModel booking) {
+    double rating = 0.0;
+    final commentController = TextEditingController();
+    Get.dialog(_buildReviewDialog(ctrl, booking, rating, commentController, isEdit: false), barrierDismissible: false);
+  }
+
+  void _showEditReviewDialog(AppointmentsCtrl ctrl, BookingModel booking) {
+    double rating = booking.rating ?? 0.0;
+    final commentController = TextEditingController(text: booking.review ?? '');
+    Get.dialog(_buildReviewDialog(ctrl, booking, rating, commentController, isEdit: true), barrierDismissible: false);
+  }
+
+  Widget _buildReviewDialog(AppointmentsCtrl ctrl, BookingModel booking, double rating, TextEditingController commentController, {bool isEdit = false}) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ClipRRect(
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(24),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), shape: BoxShape.circle),
+                  child: Icon(Icons.star_rounded, color: AppTheme.primaryTeal, size: 40),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isEdit ? 'Edit Your Review' : 'Rate Your Experience',
+                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: 8),
+                Text('How was your session with ${booking.doctorName}?', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.backgroundLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.borderColor),
+                  ),
+                  child: RatingStars(
+                    axis: Axis.horizontal,
+                    value: rating,
+                    onValueChanged: (v) => setState(() => rating = v),
+                    starCount: 5,
+                    starSize: 20,
+                    valueLabelColor: AppTheme.textSecondary,
+                    valueLabelTextStyle: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 12.0),
+                    valueLabelRadius: 10,
+                    maxValue: 5,
+                    starSpacing: 10,
+                    maxValueVisibility: true,
+                    valueLabelVisibility: true,
+                    animationDuration: const Duration(milliseconds: 1000),
+                    valueLabelPadding: const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
+                    starOffColor: AppTheme.borderColor,
+                    starColor: AppTheme.warningAmber,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: commentController,
+                  minLines: 1,
+                  maxLines: 3,
+                  style: TextStyle(fontSize: 12),
+                  decoration: InputDecoration(
+                    labelText: 'Your Review (Optional)',
+                    labelStyle: GoogleFonts.inter(color: AppTheme.textSecondary),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.all(16),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.textSecondary,
+                          side: BorderSide(color: AppTheme.borderColor),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text('Cancel', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: rating > 0
+                            ? () async {
+                                Get.back();
+                                if (isEdit) {
+                                  await ctrl.updateReview(booking.id!, rating, commentController.text);
+                                } else {
+                                  await ctrl.addReview(booking.id!, rating, commentController.text);
+                                }
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryTeal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(isEdit ? 'Update Review' : 'Submit Review', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 
   void _showCancelDialog(BookingModel booking) {

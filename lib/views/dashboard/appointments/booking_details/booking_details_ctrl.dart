@@ -44,9 +44,10 @@ class BookingDetailsCtrl extends GetxController {
       final bookingData = await authService.cancelAppointment({"bookingId": bookingId});
       if (bookingData != null && bookingData['booking'] != null) {
         booking.value = BookingModel.fromJson(bookingData['booking']);
+        toaster.success('Booking cancelled successfully');
       }
     } catch (e) {
-      toaster.error('Failed to cancel booking details: ${e.toString()}');
+      toaster.error('Failed to cancel booking: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -57,8 +58,35 @@ class BookingDetailsCtrl extends GetxController {
     Get.dialog(RescheduleDialog(booking: booking.value!, onRescheduleSuccess: () => refreshBooking()), barrierDismissible: false);
   }
 
-  void addReview(double rating, String comment) {
-    // TODO: Implement add review API
-    Get.snackbar('Success', 'Review submitted successfully');
+  Future<void> addReview(double rating, String review) async {
+    try {
+      isLoading.value = true;
+      final requestData = {"bookingId": bookingId, "rating": rating, "review": review};
+      final bookingData = await authService.addRatingReview(requestData);
+      if (bookingData != null && bookingData['booking'] != null) {
+        booking.value = BookingModel.fromJson(bookingData['booking']);
+        toaster.success('Review submitted successfully');
+      }
+    } catch (e) {
+      toaster.error('Failed to submit review: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateReview(double rating, String review) async {
+    try {
+      isLoading.value = true;
+      final requestData = {"bookingId": bookingId, "rating": rating, "review": review};
+      final bookingData = await authService.updateRatingReview(requestData);
+      if (bookingData != null && bookingData['booking'] != null) {
+        booking.value = BookingModel.fromJson(bookingData['booking']);
+        toaster.success('Review updated successfully');
+      }
+    } catch (e) {
+      toaster.error('Failed to update review: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

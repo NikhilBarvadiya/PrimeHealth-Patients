@@ -149,20 +149,51 @@ class AppointmentsCtrl extends GetxController {
     Get.dialog(RescheduleDialog(booking: booking, onRescheduleSuccess: refreshBookings), barrierDismissible: false);
   }
 
-  Future<void> addReview(String bookingId, double rating, String comment) async {
+  Future<void> addReview(String bookingId, double rating, String review) async {
     try {
-      final index = bookings.indexWhere((booking) => booking.id == bookingId);
-      if (index != -1) {
-        // bookings[index] = bookings[index].copyWith(rating: rating, review: comment);
+      final requestData = {"bookingId": bookingId, "rating": rating, "review": review};
+      final bookingData = await authService.addRatingReview(requestData);
+      if (bookingData != null && bookingData['booking'] != null) {
+        final index = bookings.indexWhere((booking) => booking.id == bookingId);
+        if (index != -1) {
+          bookings[index].rating = rating;
+          bookings[index].review = review;
+          update();
+        }
+        toaster.success('Review submitted successfully');
       }
-      toaster.success('Review submitted successfully');
     } catch (e) {
       toaster.error('Failed to submit review: ${e.toString()}');
     }
   }
 
-  void viewBookingDetails(String bookingId) {
-    Get.to(() => BookingDetails(bookingId: bookingId));
+  Future<void> updateReview(String bookingId, double rating, String review) async {
+    try {
+      final requestData = {"bookingId": bookingId, "rating": rating, "review": review};
+      final bookingData = await authService.updateRatingReview(requestData);
+      if (bookingData != null && bookingData['booking'] != null) {
+        final index = bookings.indexWhere((booking) => booking.id == bookingId);
+        if (index != -1) {
+          bookings[index].rating = rating;
+          bookings[index].review = review;
+          update();
+        }
+        toaster.success('Review updated successfully');
+      }
+    } catch (e) {
+      toaster.error('Failed to update review: ${e.toString()}');
+    }
+  }
+
+  Future<void> viewBookingDetails(String bookingId) async {
+    BookingModel? bookingModel = await Get.to(() => BookingDetails(bookingId: bookingId));
+    if (bookingModel != null) {
+      int index = bookings.indexWhere((e) => e.id == bookingId);
+      if (index != -1) {
+        bookings[index] = bookingModel;
+        update();
+      }
+    }
   }
 
   void loadMore() {
