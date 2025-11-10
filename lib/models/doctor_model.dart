@@ -1,5 +1,6 @@
 class DoctorModel {
   final String id;
+  final String fcm;
   final String name;
   final String email;
   final String mobileNo;
@@ -23,6 +24,7 @@ class DoctorModel {
 
   DoctorModel({
     required this.id,
+    required this.fcm,
     required this.name,
     required this.email,
     required this.mobileNo,
@@ -83,6 +85,7 @@ class DoctorModel {
     }
     return DoctorModel(
       id: json['_id']?.toString() ?? '',
+      fcm: json['fcm']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown Doctor',
       email: json['email']?.toString() ?? '',
       mobileNo: json['mobileNo']?.toString() ?? '',
@@ -108,6 +111,7 @@ class DoctorModel {
 
   DoctorModel copyWith({
     String? id,
+    String? fcm,
     String? name,
     String? email,
     String? mobileNo,
@@ -130,6 +134,7 @@ class DoctorModel {
   }) {
     return DoctorModel(
       id: id ?? this.id,
+      fcm: fcm ?? this.fcm,
       name: name ?? this.name,
       email: email ?? this.email,
       mobileNo: mobileNo ?? this.mobileNo,

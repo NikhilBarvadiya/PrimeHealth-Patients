@@ -36,7 +36,8 @@ dependencies:
   dio: ^5.9.0
   geocoding: ^4.0.0
   device_info_plus: ^12.2.0
-  onesignal_flutter: ^5.3.4
+  audioplayers: ^6.5.1
+  vibration: ^3.1.4
 
 dev_dependencies:
   flutter_test:

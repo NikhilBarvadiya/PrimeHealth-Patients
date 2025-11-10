@@ -3,9 +3,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:prime_health_patients/firebase_options.dart';
+import 'package:prime_health_patients/service/calling_init_method.dart';
 import 'package:prime_health_patients/service/calling_service.dart';
 import 'package:prime_health_patients/utils/routes/route_methods.dart';
 import 'package:prime_health_patients/utils/routes/route_name.dart';
@@ -20,18 +23,19 @@ Future<void> main() async {
   GestureBinding.instance.resamplingEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('en', null);
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Color(0xFF0D9488), statusBarIconBrightness: Brightness.light));
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
-  // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-  // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  // await CallingInitMethod().initData();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Color(0xFF0D9488), statusBarIconBrightness: Brightness.light));
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  await CallingInitMethod().initData();
   await preload();
   runApp(const RestartApp(child: MyApp()));
 }
 
+@pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await CallingService().handleBackgroundMessage(message);
 }
 

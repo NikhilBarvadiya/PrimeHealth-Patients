@@ -83,10 +83,24 @@ class CallingInitMethod {
             CallingService().closeNotification(callData.senderId.hashCode);
             final userData = await read(AppSession.userData);
             if (userData != null) {
-              UserModel userModel = UserModel(id: "1", name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
+              UserModel userModel = UserModel(
+                id: userData["_id"] ?? "",
+                fcm: userData["fcm"] ?? "",
+                name: userData["name"] ?? 'Dr. John Smith',
+                email: userData["email"] ?? 'john.smith@example.com',
+                mobileNo: userData["mobile"] ?? '+91 98765 43210',
+                address: {},
+              );
               CallingService().makeCall(
-                callData.senderFCMToken,
-                CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: "", callType: callData.callType, status: CallStatus.rejected, channelName: callData.channelName),
+                AppointmentModel(id: callData.senderId, doctorName: callData.senderName, fcmToken: callData.senderFCMToken),
+                CallData(
+                  senderId: userModel.id,
+                  senderName: userModel.name,
+                  senderFCMToken: userModel.fcm,
+                  callType: callData.callType,
+                  status: CallStatus.rejected,
+                  channelName: callData.channelName,
+                ),
               );
             }
             Get.back();
@@ -103,7 +117,8 @@ class CallingInitMethod {
     final userData = await read(AppSession.userData);
     if (userData == null) return;
     UserModel userModel = UserModel(
-      id: "1",
+      id: userData["_id"] ?? "",
+      fcm: userData["fcm"] ?? "",
       name: userData["name"] ?? 'Dr. John Smith',
       email: userData["email"] ?? 'john.smith@example.com',
       mobileNo: userData["mobile"] ?? '+91 98765 43210',

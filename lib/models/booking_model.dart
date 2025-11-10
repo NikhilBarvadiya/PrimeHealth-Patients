@@ -3,6 +3,7 @@ class BookingModel {
   String bookingId;
   String patientId;
   String doctorId;
+  String doctorFcm;
   String slotId;
   String serviceId;
   DateTime appointmentDate;
@@ -38,6 +39,7 @@ class BookingModel {
     required this.bookingId,
     required this.patientId,
     required this.doctorId,
+    required this.doctorFcm,
     required this.slotId,
     required this.serviceId,
     required this.appointmentDate,
@@ -75,6 +77,7 @@ class BookingModel {
       bookingId: json['bookingId']?.toString() ?? '',
       patientId: json['patientId']?.toString() ?? '',
       doctorId: json['doctorId'] is Map ? json['doctorId']['_id'].toString() : json['doctorId'],
+      doctorFcm: json['doctorId'] is Map ? json['doctorId']['fcm'].toString() : '',
       slotId: json['slotId']?.toString() ?? '',
       serviceId: json['serviceId'] is Map ? json['serviceId']['_id'].toString() : json['serviceId'],
       appointmentDate: DateTime.parse(json['appointmentDate']?.toString() ?? DateTime.now().toString()),

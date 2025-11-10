@@ -361,4 +361,19 @@ class AuthService extends GetxService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getCalls(Map<String, dynamic> request) async {
+    try {
+      final response = await ApiManager().call(APIIndex.getCalls, request, ApiType.post);
+      if (response.status == 200 && response.data != null) {
+        return response.data;
+      } else {
+        toaster.warning(response.message ?? 'Failed to get call history');
+        return null;
+      }
+    } catch (err) {
+      toaster.error('get call history failed: ${err.toString()}');
+      return null;
+    }
+  }
 }

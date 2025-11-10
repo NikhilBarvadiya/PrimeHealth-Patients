@@ -1,15 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:prime_health_patients/models/appointment_model.dart';
 import 'package:prime_health_patients/models/calling_model.dart';
 import 'package:prime_health_patients/service/calling_init_method.dart';
-import 'package:prime_health_patients/service/firebase_service.dart';
+import 'package:prime_health_patients/utils/config/session.dart';
+import 'package:prime_health_patients/utils/network/api_index.dart';
+import 'package:prime_health_patients/utils/network/api_manager.dart';
+import 'package:prime_health_patients/utils/storage.dart';
+import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:vibration/vibration.dart';
 
 String? lastHandledMessageId;
 
 class CallingService {
   static final CallingService _instance = CallingService._internal();
+
   factory CallingService() => _instance;
 
   CallingService._internal();
@@ -19,6 +28,7 @@ class CallingService {
 
   Function(CallData)? onIncomingCall;
   Function(String)? onCallAccepted, onCallRejected, onCallEnded;
+  AudioPlayer player = AudioPlayer();
 
   Future<void> initialize() async {
     await _firebaseMessaging.requestPermission(alert: true, badge: true, sound: true, provisional: false);
@@ -26,14 +36,31 @@ class CallingService {
     await _initializeLocalNotifications();
   }
 
+  _whistle(String sound) async {
+    Vibration.vibrate(pattern: [150, 200, 300, 200, 150]);
+    await player.setSource(AssetSource(sound)).then((value) {
+      player.play(AssetSource(sound));
+    });
+    player.onPlayerStateChanged.listen((PlayerState s) async {
+      if (s == PlayerState.completed) {
+        await player.play(AssetSource(sound));
+      }
+    });
+  }
+
   Future<String?> getToken() async {
     try {
-      await FirebaseMessaging.instance.deleteToken();
-      if (Platform.isIOS) {
-        return await FirebaseMessaging.instance.getAPNSToken();
-      } else {
-        return await FirebaseMessaging.instance.getToken();
+      if (Platform.isAndroid) {
+        final status = await Permission.notification.status;
+        if (!status.isGranted) {
+          final result = await Permission.notification.request();
+          if (!result.isGranted) {
+            return null;
+          }
+        }
       }
+      final token = await FirebaseMessaging.instance.getToken();
+      return token;
     } catch (err) {
       return null;
     }
@@ -80,26 +107,31 @@ class CallingService {
       if (data.containsKey('status')) {
         var type = data['status'];
         switch (type) {
-          case 'calling':
+          case '0':
+            /* calling */
             final callData = CallData(
               senderId: data['senderId'] ?? '',
               senderName: data['senderName'] ?? '',
               senderFCMToken: data['senderFCMToken'] ?? '',
-              callType: data['callType'] == "voice" ? CallType.voice : CallType.video,
+              callType: data['callType'] == "0" ? CallType.voice : CallType.video,
               status: CallStatus.calling,
               channelName: data['channelName'] ?? '',
             );
+            _whistle("ringtone.mp3");
             onIncomingCall?.call(callData);
             _showIncomingCallNotification(callData);
             break;
-          case 'accepted':
+          case '1':
+            /* accepted */
             onCallAccepted?.call(data['senderName'] ?? '');
             break;
-          case 'rejected':
+          case '2':
+            /* rejected */
             onCallRejected?.call(data['senderName'] ?? '');
             _showLocalNotification(title: 'Call Rejected', body: '${data['senderName']} rejected the call', payload: jsonEncode(data));
             break;
-          case 'ended':
+          case '3':
+            /* ended */
             onCallEnded?.call(data['senderName'] ?? '');
             _showLocalNotification(title: 'Call Ended', body: '${data['senderName']} ended the call', payload: jsonEncode(data));
             break;
@@ -149,23 +181,35 @@ class CallingService {
 
   closeNotification(int senderId) => _localNotifications.cancel(senderId);
 
-  Future<void> sendNotification(String receiverToken, CallData callData) async {
-    final body = {
-      "message": {
-        "token": receiverToken,
-        "notification": {"title": "Incoming ${callData.callType == CallType.video ? 'Video' : 'Voice'} Call", "body": "From ${callData.senderName}"},
-        "data": {
-          "senderId": callData.senderId,
-          "senderName": callData.senderName,
-          "senderFCMToken": callData.senderFCMToken,
-          "channelName": callData.channelName,
-          "callType": callData.callType.name,
-          "status": callData.status.name,
-        },
-      },
-    };
-    await firebaseService.sendNotification(body);
+  Future<void> sendNotification(AppointmentModel receiver, CallData callData) async {
+    final userData = await read(AppSession.userData);
+    if (userData != null) {
+      final callReq = {
+        "channelName": callData.channelName,
+        "senderId": callData.senderId,
+        "senderName": callData.senderName,
+        "senderFCMToken": callData.senderFCMToken,
+        "receiverId": receiver.id,
+        "receiverName": receiver.doctorName,
+        "receiverFCMToken": receiver.fcmToken,
+        "callType": callData.callType == CallType.video ? 'video' : 'voice',
+        "status": callData.status.name,
+        "startTime": callData.startTime,
+        "endTime": callData.endTime,
+        "duration": callData.duration,
+      };
+      await ApiManager().call(APIIndex.createCallLog, callReq, ApiType.post);
+    }
+    final body = {"receiverToken": receiver.fcmToken, "callData": callData.toJson()};
+    try {
+      final response = await ApiManager().call(APIIndex.sendNotification, body, ApiType.post);
+      if (response.status != 200 || response.data == null) {
+        toaster.warning(response.message ?? 'Failed to send notification');
+      }
+    } catch (err) {
+      toaster.error('Notification send failed: ${err.toString()}');
+    }
   }
 
-  Future<void> makeCall(String receiverToken, CallData callData) async => await sendNotification(receiverToken, callData);
+  Future<void> makeCall(AppointmentModel receiver, CallData callData) async => await sendNotification(receiver, callData);
 }

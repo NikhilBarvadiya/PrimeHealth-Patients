@@ -12,7 +12,7 @@ import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
 
 class ProfileCtrl extends GetxController {
-  var user = UserModel(id: '', name: '', email: '', mobileNo: '').obs;
+  var user = UserModel(id: '', fcm: '', name: '', email: '', mobileNo: '').obs;
   var isLoading = false.obs;
   bool isEditMode = false;
   var avatar = Rx<File?>(null);

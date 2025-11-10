@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +9,7 @@ import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists.dart';
+import 'package:prime_health_patients/views/dashboard/home/call_history/call_history.dart';
 import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
 
 class Home extends StatelessWidget {
@@ -46,6 +48,15 @@ class Home extends StatelessWidget {
                 ],
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: Icon(CupertinoIcons.phone, color: AppTheme.textPrimary, size: 26),
+                  onPressed: () => Get.to(() => CallHistory()),
+                ),
+              ),
+            ],
           ),
           SliverToBoxAdapter(
             child: Column(

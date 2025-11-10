@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:prime_health_patients/models/appointment_model.dart';
+import 'package:prime_health_patients/models/calling_model.dart';
 import 'package:prime_health_patients/models/slot_model.dart';
 import 'package:prime_health_patients/models/review_model.dart';
+import 'package:prime_health_patients/models/user_model.dart';
+import 'package:prime_health_patients/service/calling_service.dart';
+import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/network/api_config.dart';
+import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/calling_view.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details_ctrl.dart';
 
 class DoctorDetails extends StatefulWidget {
@@ -125,7 +132,53 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
         onPressed: () => Get.back(),
       ),
+      actions: [
+        IconButton(
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.backgroundLight,
+            padding: const EdgeInsets.all(8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          icon: Icon(Icons.phone_rounded, color: AppTheme.textPrimary, size: 24),
+          onPressed: () => _onCallAction(context, CallType.voice),
+        ),
+        IconButton(
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.backgroundLight,
+            padding: const EdgeInsets.all(8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 24),
+          onPressed: () => _onCallAction(context, CallType.video),
+        ),
+        SizedBox(width: 10),
+      ],
     );
+  }
+
+  _onCallAction(BuildContext context, CallType callType) async {
+    if (ctrl.doctor.value.fcm.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token is missing...!')));
+      return;
+    }
+    final userData = await read(AppSession.userData);
+    if (userData != null) {
+      UserModel userModel = UserModel(id: userData["_id"] ?? '', fcm: userData["fcm"] ?? '', name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
+      String channelName = "${userModel.id}_${ctrl.doctor.value.id}_${DateTime.now().millisecondsSinceEpoch}";
+      CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: userModel.fcm, callType: callType, status: CallStatus.calling, channelName: channelName);
+      if (context.mounted) {
+        final receiver = AppointmentModel(id: ctrl.doctor.value.id, fcmToken: ctrl.doctor.value.fcm, doctorName: ctrl.doctor.value.name);
+        CallingService().makeCall(receiver, callData);
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return CallingView(channelName: channelName, callType: callType, receiver: receiver, sender: userModel);
+            },
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildBasicInfo() {

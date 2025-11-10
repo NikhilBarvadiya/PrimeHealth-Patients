@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:prime_health_patients/service/calling_service.dart';
 import 'package:prime_health_patients/utils/routes/route_name.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
@@ -19,7 +20,8 @@ class LoginCtrl extends GetxController {
     }
     isLoading.value = true;
     try {
-      final loginRequest = {'mobileNo': mobileCtrl.text.trim()};
+      String getToken = await CallingService().getToken() ?? "";
+      final loginRequest = {'mobileNo': mobileCtrl.text.trim(), "fcm": getToken};
       final loginResponse = await authService.login(loginRequest);
       if (loginResponse != null && loginResponse['patientId'] != null) {
         Get.toNamed(AppRouteNames.verifyOtp, arguments: {'mobileNo': mobileCtrl.text.trim(), 'patientId': loginResponse['patientId']});

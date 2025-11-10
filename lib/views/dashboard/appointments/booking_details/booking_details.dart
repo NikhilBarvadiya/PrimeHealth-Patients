@@ -1,12 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:prime_health_patients/models/appointment_model.dart';
 import 'package:prime_health_patients/models/booking_model.dart';
 import 'package:prime_health_patients/models/calling_model.dart';
+import 'package:prime_health_patients/models/user_model.dart';
+import 'package:prime_health_patients/service/calling_service.dart';
+import 'package:prime_health_patients/utils/config/session.dart';
+import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/booking_details/booking_details_ctrl.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/ui/calling_view.dart';
 
 class BookingDetails extends StatelessWidget {
   final String bookingId;
@@ -38,13 +45,22 @@ class BookingDetails extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                style: ButtonStyle(
-                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                  backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppTheme.backgroundLight,
+                  padding: const EdgeInsets.all(8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                icon: Icon(Icons.refresh_rounded, color: Colors.black87, size: 20),
-                onPressed: () => ctrl.refreshBooking(),
+                icon: Icon(CupertinoIcons.phone, color: AppTheme.textPrimary, size: 24),
+                onPressed: () => _onCallAction(context, CallType.voice, ctrl),
+              ),
+              IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: AppTheme.backgroundLight,
+                  padding: const EdgeInsets.all(8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 24),
+                onPressed: () => _onCallAction(context, CallType.video, ctrl),
               ),
               SizedBox(width: 10),
             ],
@@ -53,6 +69,31 @@ class BookingDetails extends StatelessWidget {
         );
       },
     );
+  }
+
+  _onCallAction(BuildContext context, CallType callType, BookingDetailsCtrl ctrl) async {
+    if (ctrl.booking.value == null || ctrl.booking.value!.doctorFcm.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token is missing...!')));
+      return;
+    }
+    final userData = await read(AppSession.userData);
+    if (userData != null) {
+      UserModel userModel = UserModel(id: userData["_id"] ?? '', fcm: userData["fcm"] ?? '', name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
+      String channelName = "${userModel.id}_${ctrl.booking.value?.id}_${DateTime.now().millisecondsSinceEpoch}";
+      CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: userModel.fcm, callType: callType, status: CallStatus.calling, channelName: channelName);
+      if (context.mounted) {
+        final receiver = AppointmentModel(id: ctrl.booking.value!.doctorId.toString(), fcmToken: ctrl.booking.value!.doctorFcm, doctorName: ctrl.booking.value!.doctorName.toString());
+        CallingService().makeCall(receiver, callData);
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return CallingView(channelName: channelName, callType: callType, receiver: receiver, sender: userModel);
+            },
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildBody(BuildContext context, BookingDetailsCtrl ctrl) {
@@ -224,15 +265,6 @@ class BookingDetails extends StatelessWidget {
                     Text(booking.consultationType, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
                   ],
                 ),
-              ),
-              IconButton(
-                onPressed: () => _onCallAction(context, booking, CallType.voice),
-                style: ButtonStyle(
-                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                  backgroundColor: WidgetStatePropertyAll(AppTheme.primaryTeal.withOpacity(0.1)),
-                ),
-                icon: Icon(Icons.phone_rounded, color: AppTheme.primaryTeal, size: 20),
               ),
             ],
           ),
@@ -597,31 +629,6 @@ class BookingDetails extends StatelessWidget {
       default:
         return Icons.calendar_today_rounded;
     }
-  }
-
-  _onCallAction(BuildContext context, BookingModel appointmentModel, CallType callType) async {
-    // BookingModel appointmentModel = BookingModel(id: appointment.id, doctorName: appointment.therapistName, fcmToken: appointment.fcmToken ?? "");
-    // if (appointmentModel.fcmToken.isEmpty) {
-    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token is missing...!')));
-    //   return;
-    // }
-    // final userData = await read(AppSession.userData);
-    // if (userData != null) {
-    //   UserModel userModel = UserModel(id: "1", name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
-    //   String channelName = "${userModel.id}_${appointmentModel.id}_${DateTime.now().millisecondsSinceEpoch}";
-    //   CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: "", callType: callType, status: CallStatus.calling, channelName: channelName);
-    //   CallingService().makeCall(appointment.fcmToken.toString(), callData);
-    //   if (context.mounted) {
-    //     await Navigator.push(
-    //       context,
-    //       MaterialPageRoute(
-    //         builder: (context) {
-    //           return CallingView(channelName: channelName, callType: callType, receiver: appointmentModel, sender: userModel);
-    //         },
-    //       ),
-    //     );
-    //   }
-    // }
   }
 
   void _showAddReviewDialog(BookingDetailsCtrl ctrl, BookingModel booking) {

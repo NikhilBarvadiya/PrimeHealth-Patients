@@ -11,6 +11,7 @@ class DoctorDetailsCtrl extends GetxController {
   var isLoading = true.obs;
   var doctor = DoctorModel(
     id: '',
+    fcm: '',
     name: '',
     email: '',
     mobileNo: '',

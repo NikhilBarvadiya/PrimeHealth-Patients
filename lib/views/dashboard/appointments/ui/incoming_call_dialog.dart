@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:prime_health_patients/models/calling_model.dart';
+import 'package:prime_health_patients/service/calling_service.dart';
 
 class IncomingCallDialog extends StatefulWidget {
   final CallData callData;
@@ -187,7 +188,8 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> with TickerProv
           _buildControlButton(
             icon: Icons.call_end_rounded,
             isActive: true,
-            onPressed: () {
+            onPressed: () async {
+              await CallingService().player.pause();
               HapticFeedback.heavyImpact();
               widget.onReject();
             },
@@ -199,7 +201,8 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> with TickerProv
           _buildControlButton(
             icon: isVideo ? Icons.videocam_rounded : Icons.call_rounded,
             isActive: true,
-            onPressed: () {
+            onPressed: () async {
+              await CallingService().player.pause();
               HapticFeedback.heavyImpact();
               widget.onAccept();
             },
