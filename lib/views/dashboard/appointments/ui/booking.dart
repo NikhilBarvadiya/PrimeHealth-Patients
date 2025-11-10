@@ -440,7 +440,7 @@ class _BookingState extends State<Booking> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           onTap: () => _showServiceSelectionDialog(),
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -508,44 +508,47 @@ class _BookingState extends State<Booking> {
                     itemBuilder: (context, index) {
                       final service = _availableServices[index];
                       final isSelected = _selectedService?.id == service.id;
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            _onServiceSelected(service);
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppTheme.primaryTeal.withOpacity(0.1) : AppTheme.backgroundLight,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSelected ? AppTheme.primaryTeal : Colors.transparent, width: 2),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(color: isSelected ? AppTheme.primaryTeal : AppTheme.backgroundLight, borderRadius: BorderRadius.circular(8)),
-                                  child: Icon(Icons.medical_services_rounded, color: isSelected ? Colors.white : AppTheme.primaryTeal, size: 20),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        service.name,
-                                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(service.category, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
-                                    ],
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.primaryTeal.withOpacity(0.1) : AppTheme.backgroundLight,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isSelected ? AppTheme.primaryTeal : Colors.transparent, width: 2),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              _onServiceSelected(service);
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: isSelected ? AppTheme.primaryTeal : AppTheme.backgroundLight, borderRadius: BorderRadius.circular(8)),
+                                    child: Icon(Icons.medical_services_rounded, color: isSelected ? Colors.white : AppTheme.primaryTeal, size: 20),
                                   ),
-                                ),
-                                if (isSelected) Icon(Icons.check_circle_rounded, color: AppTheme.primaryTeal, size: 20),
-                              ],
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          service.name,
+                                          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(service.category, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected) Icon(Icons.check_circle_rounded, color: AppTheme.primaryTeal, size: 20),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -647,7 +650,7 @@ class _BookingState extends State<Booking> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           onTap: () => _showDoctorSelectionDialog(),
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -729,55 +732,58 @@ class _BookingState extends State<Booking> {
                     itemBuilder: (context, index) {
                       final doctor = _availableDoctors[index];
                       final isSelected = _selectedDoctor?.id == doctor.id;
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            _onDoctorSelected(doctor);
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppTheme.primaryTeal.withOpacity(0.1) : AppTheme.backgroundLight,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSelected ? AppTheme.primaryTeal : Colors.transparent, width: 2),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.2)),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.primaryTeal.withOpacity(0.1) : AppTheme.backgroundLight,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isSelected ? AppTheme.primaryTeal : Colors.transparent, width: 2),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              _onDoctorSelected(doctor);
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.2)),
+                                    ),
+                                    child: ClipOval(
+                                      child: doctor.profileImage != null && doctor.profileImage!.isNotEmpty
+                                          ? Image.network(helper.getAWSImage(doctor.profileImage!), fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => _buildDefaultDoctorImage())
+                                          : _buildDefaultDoctorImage(),
+                                    ),
                                   ),
-                                  child: ClipOval(
-                                    child: doctor.profileImage != null && doctor.profileImage!.isNotEmpty
-                                        ? Image.network(helper.getAWSImage(doctor.profileImage!), fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => _buildDefaultDoctorImage())
-                                        : _buildDefaultDoctorImage(),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          doctor.name,
+                                          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '₹${doctor.consultationFee.toStringAsFixed(0)} consultation fee',
+                                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        doctor.name,
-                                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '₹${doctor.consultationFee.toStringAsFixed(0)} consultation fee',
-                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected) Icon(Icons.check_circle_rounded, color: AppTheme.primaryTeal, size: 20),
-                              ],
+                                  if (isSelected) Icon(Icons.check_circle_rounded, color: AppTheme.primaryTeal, size: 20),
+                                ],
+                              ),
                             ),
                           ),
                         ),
