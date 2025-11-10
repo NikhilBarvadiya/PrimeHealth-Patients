@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:prime_health_patients/models/appointment_model.dart';
@@ -654,27 +653,20 @@ class _CallingViewState extends State<CallingView> with TickerProviderStateMixin
     }
     final endTime = DateTime.now();
     final duration = _startTime != null ? endTime.difference(_startTime!).inSeconds : 0;
-    CallData callData = CallData(senderId: widget.sender.id, senderName: widget.sender.name, senderFCMToken: "", callType: widget.callType, status: CallStatus.ended, channelName: widget.channelName);
+    CallData callData = CallData(
+      senderId: widget.sender.id,
+      senderName: widget.sender.name,
+      senderFCMToken: "",
+      callType: widget.callType,
+      status: CallStatus.ended,
+      channelName: widget.channelName,
+      startTime: _startTime?.toIso8601String(),
+      endTime: endTime.toIso8601String(),
+      duration: double.tryParse(duration.toString()) ?? 0.0,
+    );
     await _callService.leaveChannel();
     CallingService().closeNotification(widget.receiver.id.hashCode);
-    CallingService().makeCall(widget.receiver.fcmToken, callData);
-    final callPayload = {
-      "userIds": [widget.sender.id, widget.receiver.id],
-      "videoCallData": {
-        "callType": widget.callType == CallType.video ? "video" : "voice",
-        "channelName": widget.channelName,
-        "status": "ended",
-        "startTime": _startTime?.toIso8601String(),
-        "endTime": endTime.toIso8601String(),
-        "duration": duration,
-        "senderId": widget.sender.id,
-        "senderName": widget.sender.name,
-        "receiverId": widget.receiver.id,
-        "receiverName": widget.receiver.doctorName,
-      },
-    };
-    log("End Calling Req.---->$callPayload");
-    // await ApiManager.request(endpoint: ApiConstant.storeVideoCall, data: callPayload);
+    CallingService().makeCall(widget.receiver, callData);
     if (mounted) Navigator.pop(context);
   }
 
