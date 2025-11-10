@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:prime_health_patients/utils/decoration.dart';
-import 'package:prime_health_patients/utils/network/api_config.dart';
+import 'package:prime_health_patients/utils/helper.dart';
 import 'package:prime_health_patients/views/dashboard/profile/profile_ctrl.dart';
 import 'package:prime_health_patients/views/dashboard/profile/ui/settings.dart';
 
@@ -119,7 +119,7 @@ class Profile extends StatelessWidget {
                       border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
                       image: hasAvatar
                           ? DecorationImage(image: FileImage(ctrl.avatar.value!), fit: BoxFit.cover)
-                          : (hasProfileImage ? DecorationImage(image: NetworkImage(APIConfig.resourceBaseURL + ctrl.user.value.profileImage.toString()), fit: BoxFit.cover) : null),
+                          : (hasProfileImage ? DecorationImage(image: NetworkImage(helper.getAWSImage(ctrl.user.value.profileImage.toString())), fit: BoxFit.cover) : null),
                     ),
                     child: !hasProfileImage && !hasAvatar ? Icon(Icons.person_rounded, size: 40, color: Colors.white) : null,
                   );

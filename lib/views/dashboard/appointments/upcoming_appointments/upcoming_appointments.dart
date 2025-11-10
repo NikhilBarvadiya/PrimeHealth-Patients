@@ -6,6 +6,7 @@ import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/booking_details/booking_details.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/upcoming_appointments/upcoming_appointments_ctrl.dart';
 import 'package:prime_health_patients/views/dashboard/dashboard_ctrl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class UpcomingAppointments extends StatelessWidget {
   UpcomingAppointments({super.key});
@@ -17,7 +18,10 @@ class UpcomingAppointments extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('Upcoming Appointments', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700)),
+        title: Text(
+          'Upcoming Appointments',
+          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -31,10 +35,10 @@ class UpcomingAppointments extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        if (ctrl.isLoading.value) {
+        if (ctrl.isLoading.value && ctrl.appointments.isEmpty) {
           return _buildLoadingState();
         }
-        if (ctrl.appointments.isEmpty) {
+        if (ctrl.appointments.isEmpty && !ctrl.isLoading.value) {
           return _buildEmptyState();
         }
         return _buildAppointmentsList();
@@ -43,67 +47,213 @@ class UpcomingAppointments extends StatelessWidget {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(color: AppTheme.primaryTeal),
-          const SizedBox(height: 16),
-          Text('Loading appointments...', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+    return RefreshIndicator(
+      onRefresh: () async => await ctrl.refreshAppointments(),
+      child: CustomScrollView(
+        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) => _buildAppointmentShimmerCard(), childCount: 6)),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildAppointmentShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 16,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 80,
+                          height: 12,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 60,
+                    height: 24,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(color: Colors.transparent),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.calendar_today_outlined, size: 80, color: AppTheme.textLight),
-        const SizedBox(height: 20),
-        Text(
-          'No Upcoming Appointments',
-          style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
-        ),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Text(
-            'You don\'t have any upcoming appointments scheduled',
-            style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight),
-            textAlign: TextAlign.center,
+    return RefreshIndicator(
+      onRefresh: () async => await ctrl.refreshAppointments(),
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        child: SizedBox(
+          height: MediaQuery.of(Get.context!).size.height * 0.8,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.calendar_today_outlined, size: 80, color: AppTheme.textLight),
+              const SizedBox(height: 20),
+              Text(
+                'No Upcoming Appointments',
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  'You don\'t have any upcoming appointments scheduled',
+                  style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  DashboardCtrl dashboardCtrl = Get.put(DashboardCtrl());
+                  dashboardCtrl.changeTab(1);
+                  Get.back();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryTeal,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  elevation: 2,
+                  shadowColor: AppTheme.primaryTeal.withOpacity(0.3),
+                ),
+                child: Text('Book Appointment', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            DashboardCtrl ctrl = Get.put(DashboardCtrl());
-            ctrl.changeTab(1);
-            Get.back();
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryTeal,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-          child: Text('Book Appointment', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildAppointmentsList() {
     return RefreshIndicator(
-      onRefresh: () async => await ctrl.loadAppointments(),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        itemCount: ctrl.appointments.length,
-        itemBuilder: (context, index) {
-          final appointment = ctrl.appointments[index];
-          return _buildAppointmentCard(appointment, index);
-        },
+      onRefresh: () async => await ctrl.refreshAppointments(),
+      child: CustomScrollView(
+        controller: ctrl.scrollController,
+        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                if (ctrl.shouldShowLoadMore(index)) {
+                  return _buildLoadMoreIndicator();
+                }
+                if (ctrl.shouldShowEndOfList(index)) {
+                  return _buildEndOfList();
+                }
+                final appointment = ctrl.appointments[index];
+                return _buildAppointmentCard(appointment, index);
+              }, childCount: ctrl.appointments.length + (ctrl.hasMore.value || ctrl.appointments.isNotEmpty ? 1 : 0)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreIndicator() {
+    return Obx(
+      () => ctrl.isLoadingMore.value
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildEndOfList() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      child: Center(
+        child: Text('No more appointments', style: TextStyle(fontSize: 14, color: Colors.grey)),
       ),
     );
   }
@@ -241,6 +391,8 @@ class UpcomingAppointments extends StatelessWidget {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
+                elevation: 2,
+                shadowColor: AppTheme.primaryTeal.withOpacity(0.3),
               ),
               child: Text('Reschedule', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
             ),

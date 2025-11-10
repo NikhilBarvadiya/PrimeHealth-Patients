@@ -9,11 +9,12 @@ import 'package:prime_health_patients/models/review_model.dart';
 import 'package:prime_health_patients/models/user_model.dart';
 import 'package:prime_health_patients/service/calling_service.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
-import 'package:prime_health_patients/utils/network/api_config.dart';
+import 'package:prime_health_patients/utils/helper.dart';
 import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/calling_view.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details_ctrl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class DoctorDetails extends StatefulWidget {
   final String doctorId;
@@ -42,7 +43,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           return _buildLoadingState();
         }
         return CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
             _buildAppBar(),
             SliverToBoxAdapter(
@@ -54,30 +55,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => ctrl.bookService(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.calendar_today_rounded, size: 18),
-                      const SizedBox(width: 8),
-                      Text('Book Appointment', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ).paddingOnly(left: 15, right: 15),
-              ),
-            ),
-            SliverToBoxAdapter(child: const SizedBox(height: 12)),
+            _buildBookButton(),
           ],
         );
       }),
@@ -85,7 +63,67 @@ class _DoctorDetailsState extends State<DoctorDetails> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(child: CircularProgressIndicator());
+    return CustomScrollView(
+      physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      slivers: [
+        _buildAppBarShimmer(),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [_buildBasicInfoShimmer(), const SizedBox(height: 24), _buildTabBarShimmer(), const SizedBox(height: 20), _buildTabContentShimmer(), const SizedBox(height: 32)],
+            ),
+          ),
+        ),
+        _buildBookButtonShimmer(),
+      ],
+    );
+  }
+
+  SliverAppBar _buildAppBarShimmer() {
+    return SliverAppBar(
+      expandedHeight: 300,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Shimmer.fromColors(
+          baseColor: Colors.grey.shade200,
+          highlightColor: Colors.grey.shade50,
+          child: Container(color: Colors.white),
+        ),
+      ),
+      pinned: true,
+      leading: IconButton(
+        style: ButtonStyle(
+          shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+          padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+          backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.9)),
+        ),
+        icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+        onPressed: () => Get.back(),
+      ),
+      actions: [
+        Shimmer.fromColors(
+          baseColor: Colors.grey.shade200,
+          highlightColor: Colors.grey.shade50,
+          child: Container(
+            width: 40,
+            height: 40,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        Shimmer.fromColors(
+          baseColor: Colors.grey.shade200,
+          highlightColor: Colors.grey.shade50,
+          child: Container(
+            width: 40,
+            height: 40,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ],
+    );
   }
 
   SliverAppBar _buildAppBar() {
@@ -97,13 +135,14 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           children: [
             Obx(
               () => Image.network(
-                APIConfig.resourceBaseURL + ctrl.doctor.value.profileImage.toString(),
+                helper.getAWSImage(ctrl.doctor.value.profileImage.toString()),
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
-                  return Container(
-                    color: AppTheme.backgroundLight,
-                    child: const Center(child: CircularProgressIndicator()),
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey.shade200,
+                    highlightColor: Colors.grey.shade50,
+                    child: Container(color: Colors.white),
                   );
                 },
                 errorBuilder: (context, error, stackTrace) {
@@ -135,50 +174,89 @@ class _DoctorDetailsState extends State<DoctorDetails> {
       actions: [
         IconButton(
           style: IconButton.styleFrom(
-            backgroundColor: AppTheme.backgroundLight,
+            backgroundColor: Colors.white.withOpacity(0.9),
             padding: const EdgeInsets.all(8),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          icon: Icon(Icons.phone_rounded, color: AppTheme.textPrimary, size: 24),
+          icon: Icon(Icons.phone_rounded, color: AppTheme.textPrimary, size: 20),
           onPressed: () => _onCallAction(context, CallType.voice),
         ),
         IconButton(
           style: IconButton.styleFrom(
-            backgroundColor: AppTheme.backgroundLight,
+            backgroundColor: Colors.white.withOpacity(0.9),
             padding: const EdgeInsets.all(8),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 24),
+          icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 20),
           onPressed: () => _onCallAction(context, CallType.video),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
       ],
     );
   }
 
-  _onCallAction(BuildContext context, CallType callType) async {
-    if (ctrl.doctor.value.fcm.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token is missing...!')));
-      return;
-    }
-    final userData = await read(AppSession.userData);
-    if (userData != null) {
-      UserModel userModel = UserModel(id: userData["_id"] ?? '', fcm: userData["fcm"] ?? '', name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
-      String channelName = "${userModel.id}_${ctrl.doctor.value.id}_${DateTime.now().millisecondsSinceEpoch}";
-      CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: userModel.fcm, callType: callType, status: CallStatus.calling, channelName: channelName);
-      if (context.mounted) {
-        final receiver = AppointmentModel(id: ctrl.doctor.value.id, fcmToken: ctrl.doctor.value.fcm, doctorName: ctrl.doctor.value.name);
-        CallingService().makeCall(receiver, callData);
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return CallingView(channelName: channelName, callType: callType, receiver: receiver, sender: userModel);
-            },
+  Widget _buildBasicInfoShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 200,
+            height: 28,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
           ),
-        );
-      }
-    }
+          const SizedBox(height: 8),
+          Container(
+            width: 150,
+            height: 18,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                width: 100,
+                height: 32,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              ),
+              const Spacer(),
+              Container(
+                width: 80,
+                height: 24,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBasicInfo() {
@@ -236,18 +314,13 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
-  Widget _buildInfoItem(IconData icon, Color color, String text) {
-    return Expanded(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
-          ),
-        ],
+  Widget _buildTabBarShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -256,6 +329,66 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     return Container(
       decoration: BoxDecoration(color: AppTheme.backgroundLight, borderRadius: BorderRadius.circular(12)),
       child: Row(children: [_buildTab(0, 'About'), _buildTab(1, 'Availability'), _buildTab(2, 'Reviews')]),
+    );
+  }
+
+  Widget _buildTabContentShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 80,
+            height: 20,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            height: 14,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            height: 14,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 200,
+            height: 14,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            width: 80,
+            height: 20,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(
+              4,
+              (index) => Container(
+                width: 80,
+                height: 32,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            width: double.infinity,
+            height: 100,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -381,12 +514,65 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         ),
         const SizedBox(height: 12),
         Obx(() {
+          if (ctrl.isLoading.value) {
+            return _buildSlotsShimmer();
+          }
           if (ctrl.availableSlots.isEmpty) {
             return _buildEmptyState('No available slots for today');
           }
           return Column(children: ctrl.availableSlots.map((slot) => _buildSlotItem(slot)).toList());
         }),
       ],
+    );
+  }
+
+  Widget _buildSlotsShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            child: Row(
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 14,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 80,
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 70,
+                  height: 24,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -457,12 +643,82 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         ),
         const SizedBox(height: 20),
         Obx(() {
+          if (ctrl.isLoading.value) {
+            return _buildReviewsShimmer();
+          }
           if (ctrl.reviews.isEmpty) {
             return _buildEmptyState('No reviews yet');
           }
           return Column(children: ctrl.reviews.map((review) => _buildReviewItem(review)).toList());
         }),
       ],
+    );
+  }
+
+  Widget _buildReviewsShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 14,
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: 80,
+                            height: 12,
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 60,
+                      height: 12,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  height: 14,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  width: 200,
+                  height: 14,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -502,7 +758,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: review.patientImage.isNotEmpty ? NetworkImage(APIConfig.resourceBaseURL + review.patientImage) : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
+                backgroundImage: review.patientImage.isNotEmpty ? NetworkImage(helper.getAWSImage(review.patientImage)) : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -534,6 +790,50 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     );
   }
 
+  Widget _buildBookButtonShimmer() {
+    return SliverToBoxAdapter(
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade200,
+        highlightColor: Colors.grey.shade50,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          height: 56,
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookButton() {
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => ctrl.bookService(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryTeal,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 2,
+              shadowColor: AppTheme.primaryTeal.withOpacity(0.3),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.calendar_today_rounded, size: 18),
+                const SizedBox(width: 8),
+                Text('Book Appointment', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyState(String message) {
     return Container(
       width: double.infinity,
@@ -546,6 +846,47 @@ class _DoctorDetailsState extends State<DoctorDetails> {
             message,
             style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  _onCallAction(BuildContext context, CallType callType) async {
+    if (ctrl.doctor.value.fcm.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token is missing...!')));
+      return;
+    }
+    final userData = await read(AppSession.userData);
+    if (userData != null) {
+      UserModel userModel = UserModel(id: userData["_id"] ?? '', fcm: userData["fcm"] ?? '', name: userData["name"] ?? 'Dr. John Smith', email: '', mobileNo: '', address: {});
+      String channelName = "${userModel.id}_${ctrl.doctor.value.id}_${DateTime.now().millisecondsSinceEpoch}";
+      CallData callData = CallData(senderId: userModel.id, senderName: userModel.name, senderFCMToken: userModel.fcm, callType: callType, status: CallStatus.calling, channelName: channelName);
+      if (context.mounted) {
+        final receiver = AppointmentModel(id: ctrl.doctor.value.id, fcmToken: ctrl.doctor.value.fcm, doctorName: ctrl.doctor.value.name);
+        CallingService().makeCall(receiver, callData);
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return CallingView(channelName: channelName, callType: callType, receiver: receiver, sender: userModel);
+            },
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildInfoItem(IconData icon, Color color, String text) {
+    return Expanded(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
           ),
         ],
       ),

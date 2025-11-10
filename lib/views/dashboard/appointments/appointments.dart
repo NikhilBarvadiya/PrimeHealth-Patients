@@ -8,6 +8,7 @@ import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/appointments_ctrl.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/date_filter_dialog.dart';
 import 'package:prime_health_patients/views/dashboard/dashboard_ctrl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class Appointments extends StatelessWidget {
   Appointments({super.key});
@@ -22,16 +23,17 @@ class Appointments extends StatelessWidget {
         onRefresh: () async => await ctrl.refreshBookings(),
         child: CustomScrollView(
           controller: ctrl.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
             SliverAppBar(
               elevation: 0,
-              toolbarHeight: 80,
-              backgroundColor: Colors.white,
+              toolbarHeight: 75,
+              backgroundColor: AppTheme.backgroundWhite,
               pinned: true,
               floating: true,
               automaticallyImplyLeading: false,
               title: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -54,8 +56,8 @@ class Appointments extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
               ],
+              bottom: PreferredSize(preferredSize: const Size.fromHeight(65), child: _buildFilterSection()),
             ),
-            SliverToBoxAdapter(child: _buildFilterSection()),
             _buildBookingsList(),
           ],
         ),
@@ -66,7 +68,7 @@ class Appointments extends StatelessWidget {
   Widget _buildFilterSection() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 9, bottom: 8),
       child: Column(
         children: [
           SizedBox(
@@ -147,7 +149,7 @@ class Appointments extends StatelessWidget {
   Widget _buildBookingsList() {
     return Obx(() {
       if (ctrl.isLoading.value && ctrl.bookings.isEmpty) {
-        return SliverFillRemaining(child: _buildLoadingState());
+        return SliverList(delegate: SliverChildBuilderDelegate((context, index) => _buildBookingShimmerCard(), childCount: 6));
       }
       if (ctrl.bookings.isEmpty && !ctrl.isLoading.value) {
         return SliverFillRemaining(child: _buildEmptyState());
@@ -165,6 +167,93 @@ class Appointments extends StatelessWidget {
         }, childCount: ctrl.bookings.length + (ctrl.hasMore.value || ctrl.bookings.isNotEmpty ? 1 : 0)),
       );
     });
+  }
+
+  Widget _buildBookingShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 16,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 80,
+                          height: 12,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 60,
+                    height: 24,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                height: 40,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildBookingCard(BookingModel booking) {
@@ -328,7 +417,7 @@ class Appointments extends StatelessWidget {
               icon: Icon(Icons.edit_rounded, size: 16, color: AppTheme.primaryTeal),
               onPressed: () => _showEditReviewDialog(ctrl, booking),
               padding: EdgeInsets.zero,
-              constraints: BoxConstraints(),
+              constraints: const BoxConstraints(),
             ),
           ],
         ],
@@ -384,17 +473,12 @@ class Appointments extends StatelessWidget {
 
   Widget _buildLoadMoreIndicator() {
     return Obx(
-      () => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: ctrl.isLoading.value ? _buildLoadingItem() : SizedBox.shrink()),
-      ),
-    );
-  }
-
-  Widget _buildLoadingItem() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
-      child: Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+      () => ctrl.isLoading.value
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -403,19 +487,6 @@ class Appointments extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16),
       child: Center(
         child: Text('No more appointments', style: TextStyle(fontSize: 14, color: Colors.grey)),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(color: AppTheme.primaryTeal),
-          const SizedBox(height: 16),
-          Text('Loading appointments...', style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textSecondary)),
-        ],
       ),
     );
   }
@@ -465,16 +536,16 @@ class Appointments extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'confirmed':
       case 'scheduled':
-        return Color(0xFF10B981);
+        return const Color(0xFF10B981);
       case 'pending':
-        return Color(0xFFF59E0B);
+        return const Color(0xFFF59E0B);
       case 'cancelled':
       case 'no-show':
-        return Color(0xFFEF4444);
+        return const Color(0xFFEF4444);
       case 'completed':
         return AppTheme.primaryTeal;
       case 'rescheduled':
-        return Color(0xFF8B5CF6);
+        return const Color(0xFF8B5CF6);
       default:
         return AppTheme.textLight;
     }
@@ -571,7 +642,7 @@ class Appointments extends StatelessWidget {
                   controller: commentController,
                   minLines: 1,
                   maxLines: 3,
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                   decoration: InputDecoration(
                     labelText: 'Your Review (Optional)',
                     labelStyle: GoogleFonts.inter(color: AppTheme.textSecondary),

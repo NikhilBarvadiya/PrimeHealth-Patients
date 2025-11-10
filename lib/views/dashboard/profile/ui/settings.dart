@@ -187,7 +187,7 @@ We're here to help you succeed!
         decoration: BoxDecoration(color: (color ?? decoration.colorScheme.primary).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
         child: Icon(icon, color: color ?? decoration.colorScheme.primary, size: 22),
       ),
-      shape: RoundedRectangleBorder(borderRadius: decoration.allBorderRadius(18.0)),
+      shape: RoundedRectangleBorder(borderRadius: decoration.allBorderRadius(20.0)),
       title: Text(
         title,
         style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: color ?? Colors.black87),

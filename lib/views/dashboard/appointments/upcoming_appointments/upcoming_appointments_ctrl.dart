@@ -8,7 +8,9 @@ import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/reschedule_dialog.dart';
 
 class UpcomingAppointmentsCtrl extends GetxController {
-  var isLoading = false.obs;
+  var isLoading = false.obs, isLoadingMore = false.obs, hasMore = true.obs;
+  var currentPage = 1.obs;
+  var scrollController = ScrollController();
   var appointments = <BookingModel>[].obs;
 
   AuthService get authService => Get.find<AuthService>();
@@ -16,35 +18,80 @@ class UpcomingAppointmentsCtrl extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _setupScrollController();
     loadAppointments();
   }
 
-  Future<void> loadAppointments() async {
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  void _setupScrollController() {
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        loadMore();
+      }
+    });
+  }
+
+  Future<void> loadAppointments({bool loadMore = false}) async {
+    if (isLoading.value && !loadMore) return;
     try {
-      isLoading.value = true;
-      final appointmentsData = await authService.getUpcomingAppointments({"page": 1, "limit": 20});
+      if (!loadMore) {
+        isLoading.value = true;
+        currentPage.value = 1;
+        hasMore.value = true;
+        appointments.clear();
+      } else {
+        if (!hasMore.value) return;
+        isLoadingMore.value = true;
+        currentPage.value++;
+      }
+      final appointmentsData = await authService.getUpcomingAppointments({"page": currentPage.value, "limit": 10});
       if (appointmentsData != null && appointmentsData['docs'] != null) {
         final List<dynamic> data = appointmentsData['docs'];
-        appointments.assignAll(data.map((item) => BookingModel.fromJson(item)).toList());
+        final newAppointments = data.map((item) => BookingModel.fromJson(item)).toList();
+        if (loadMore) {
+          appointments.addAll(newAppointments);
+        } else {
+          appointments.assignAll(newAppointments);
+        }
+        final totalPages = int.tryParse(appointmentsData['totalPages']?.toString() ?? '1') ?? 1;
+        hasMore.value = currentPage.value < totalPages;
+      } else {
+        hasMore.value = false;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load appointments: ${e.toString()}');
+      toaster.error('Failed to load appointments: ${e.toString()}');
+      hasMore.value = false;
     } finally {
       isLoading.value = false;
+      isLoadingMore.value = false;
     }
+  }
+
+  Future<void> loadMore() async {
+    if (!isLoadingMore.value && hasMore.value) {
+      await loadAppointments(loadMore: true);
+    }
+  }
+
+  Future<void> refreshAppointments() async {
+    await loadAppointments();
   }
 
   Future<void> cancelBooking(int index) async {
     try {
-      isLoading.value = true;
       final bookingData = await authService.cancelAppointment({"bookingId": appointments[index].id});
       if (bookingData != null && bookingData['booking'] != null) {
         appointments[index] = BookingModel.fromJson(bookingData['booking']);
+        update();
+        toaster.success('Appointment cancelled successfully');
       }
     } catch (e) {
-      toaster.error('Failed to cancel booking details: ${e.toString()}');
-    } finally {
-      isLoading.value = false;
+      toaster.error('Failed to cancel booking: ${e.toString()}');
     }
   }
 
@@ -117,5 +164,13 @@ class UpcomingAppointmentsCtrl extends GetxController {
 
   void showRescheduleDialog(BookingModel booking) {
     Get.dialog(RescheduleDialog(booking: booking, onRescheduleSuccess: () => loadAppointments()), barrierDismissible: false);
+  }
+
+  bool shouldShowLoadMore(int index) {
+    return index == appointments.length && hasMore.value;
+  }
+
+  bool shouldShowEndOfList(int index) {
+    return index == appointments.length && !hasMore.value && appointments.isNotEmpty;
   }
 }

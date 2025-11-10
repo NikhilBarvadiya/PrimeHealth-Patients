@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 
 class Helper {
@@ -30,6 +31,13 @@ class Helper {
       deviceIdentifier = iosInfo.identifierForVendor!;
     }
     return deviceIdentifier;
+  }
+
+  getAWSImage(String url) {
+    if (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+    return APIConfig.imageBaseURL + url;
   }
 }
 

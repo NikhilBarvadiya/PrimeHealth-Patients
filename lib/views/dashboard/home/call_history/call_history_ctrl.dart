@@ -10,6 +10,7 @@ class CallHistoryCtrl extends GetxController {
   final selectedStatus = 'all'.obs, selectedDirection = 'all'.obs;
   final currentPage = 1.obs;
   final limit = 10;
+  final scrollController = ScrollController();
 
   AuthService get authService => Get.find<AuthService>();
 
@@ -31,6 +32,19 @@ class CallHistoryCtrl extends GetxController {
   void onInit() {
     super.onInit();
     loadCalls(initial: true);
+    scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  void _scrollListener() {
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
+      loadMore();
+    }
   }
 
   Future<void> loadCalls({bool initial = false}) async {
@@ -43,7 +57,6 @@ class CallHistoryCtrl extends GetxController {
     } else {
       isLoadingMore(true);
     }
-
     try {
       final Map<String, dynamic> payload = {'page': currentPage.value, 'limit': limit, if (selectedStatus.value != 'all') 'status': selectedStatus.value};
       final response = await authService.getCalls(payload);
@@ -105,10 +118,33 @@ class CallHistoryCtrl extends GetxController {
   }
 
   String formatDuration(int seconds) {
-    if (seconds < 60) return '${seconds}s';
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '${minutes}m ${remainingSeconds}s';
+    if (seconds <= 0) return '0s';
+    if (seconds < 60) {
+      return '${seconds}s';
+    } else if (seconds < 3600) {
+      final minutes = seconds ~/ 60;
+      final remainingSeconds = seconds % 60;
+      return remainingSeconds > 0 ? '${minutes}m ${remainingSeconds}s' : '${minutes}m';
+    } else {
+      final hours = seconds ~/ 3600;
+      final minutes = (seconds % 3600) ~/ 60;
+      final remainingSeconds = seconds % 60;
+      if (minutes == 0) {
+        return '${hours}h';
+      } else if (remainingSeconds == 0) {
+        return '${hours}h ${minutes}m';
+      } else {
+        return '${hours}h ${minutes}m ${remainingSeconds}s';
+      }
+    }
+  }
+
+  bool shouldShowLoadMore(int index) {
+    return hasMore.value && isLoadingMore.value && index == filteredCalls.length;
+  }
+
+  bool shouldShowEndOfList(int index) {
+    return !hasMore.value && filteredCalls.isNotEmpty && index == filteredCalls.length;
   }
 
   String getCallStatusText(String status) {

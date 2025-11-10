@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/models/doctor_model.dart';
-import 'package:prime_health_patients/utils/network/api_config.dart';
+import 'package:prime_health_patients/utils/helper.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists_ctrl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SpecialistsList extends StatefulWidget {
   const SpecialistsList({super.key});
@@ -47,40 +48,49 @@ class _SpecialistsListState extends State<SpecialistsList> {
           }
           return false;
         },
-        child: CustomScrollView(controller: _scrollController, physics: const BouncingScrollPhysics(), slivers: [_buildAppBar(), _buildSearchFilter(), _buildContent()]),
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          slivers: [_buildAppBar(), _buildContent()],
+        ),
       ),
       floatingActionButton: Obx(
-        () => Container(
-          padding: const EdgeInsets.only(top: 8, bottom: 8, left: 15, right: 5),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.borderColor),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.event_available_rounded, size: 16, color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.textLight),
-              const SizedBox(width: 6),
-              Text(
-                'Available Now',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.textSecondary,
-                  fontWeight: ctrl.showAvailableOnly.value ? FontWeight.w600 : FontWeight.normal,
+        () => ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.only(top: 8, bottom: 8, left: 15, right: 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.borderColor),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.event_available_rounded, size: 16, color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.textLight),
+                const SizedBox(width: 6),
+                Text(
+                  'Available Now',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.textSecondary,
+                    fontWeight: ctrl.showAvailableOnly.value ? FontWeight.w600 : FontWeight.normal,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Transform.scale(
-                scale: 0.8,
-                child: Switch(
-                  value: ctrl.showAvailableOnly.value,
-                  onChanged: ctrl.toggleAvailabilityFilter,
-                  activeColor: AppTheme.successGreen,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                const SizedBox(width: 8),
+                Transform.scale(
+                  scale: 0.8,
+                  child: Switch(
+                    value: ctrl.showAvailableOnly.value,
+                    onChanged: ctrl.toggleAvailabilityFilter,
+                    activeColor: AppTheme.successGreen,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -90,10 +100,23 @@ class _SpecialistsListState extends State<SpecialistsList> {
   SliverAppBar _buildAppBar() {
     return SliverAppBar(
       elevation: 0,
-      toolbarHeight: 80,
-      backgroundColor: Colors.white,
+      toolbarHeight: 65,
+      backgroundColor: AppTheme.backgroundWhite,
       pinned: true,
       floating: true,
+      automaticallyImplyLeading: false,
+      title: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Top Specialists',
+            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text('${ctrl.filteredDoctors.length} ${ctrl.filteredDoctors.length == 1 ? 'doctor' : 'doctors'} available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+        ],
+      ),
       leading: IconButton(
         style: ButtonStyle(
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -102,19 +125,6 @@ class _SpecialistsListState extends State<SpecialistsList> {
         ),
         icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
         onPressed: () => Get.back(),
-      ),
-      title: Obx(
-        () => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Top Specialists',
-              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-            ),
-            const SizedBox(height: 4),
-            Text('${ctrl.filteredDoctors.length} ${ctrl.filteredDoctors.length == 1 ? 'doctor' : 'doctors'} available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
-          ],
-        ),
       ),
       actions: [
         Padding(
@@ -131,81 +141,97 @@ class _SpecialistsListState extends State<SpecialistsList> {
           ),
         ),
       ],
+      bottom: PreferredSize(preferredSize: const Size.fromHeight(118), child: _buildSearchFilter()),
     );
   }
 
   Widget _buildSearchFilter() {
-    return SliverToBoxAdapter(
-      child: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
-        child: Column(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
-              ),
-              child: TextField(
-                onChanged: ctrl.onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: 'Search doctors, specialties...',
-                  hintStyle: GoogleFonts.inter(color: AppTheme.textLight),
-                  prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondary),
-                  suffixIcon: Obx(
-                    () => ctrl.searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.close_rounded, color: AppTheme.textSecondary),
-                            onPressed: () => ctrl.onSearchChanged(''),
-                            tooltip: 'Clear search',
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                ),
-                style: GoogleFonts.inter(fontSize: 13),
-                textInputAction: TextInputAction.search,
-              ),
+    return Container(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 8),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
             ),
-            Obx(() {
-              if (ctrl.categories.isEmpty) {
-                return SizedBox.shrink();
-              }
+            child: TextField(
+              onChanged: ctrl.onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Search doctors, specialties...',
+                hintStyle: GoogleFonts.inter(color: AppTheme.textLight),
+                prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondary),
+                suffixIcon: Obx(
+                  () => ctrl.searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.close_rounded, color: AppTheme.textSecondary),
+                          onPressed: () => ctrl.onSearchChanged(''),
+                          tooltip: 'Clear search',
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
+              style: GoogleFonts.inter(fontSize: 13),
+              textInputAction: TextInputAction.search,
+            ),
+          ),
+          Obx(() {
+            if (ctrl.categories.isEmpty) {
               return SizedBox(
                 height: 40,
-                child: ListView.builder(
+                child: ListView(
+                  shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: ctrl.categories.length,
-                  itemBuilder: (context, index) {
-                    final cat = ctrl.categories[index];
-                    final isSelected = ctrl.selectedCategoryId.value == cat.id;
-                    return Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(cat.name, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-                        selected: isSelected,
-                        onSelected: (_) {
-                          ctrl.filterByCategory(cat.id);
-                          setState(() {});
-                        },
-                        backgroundColor: Colors.white,
-                        selectedColor: AppTheme.primaryTeal.withOpacity(0.1),
-                        checkmarkColor: AppTheme.primaryTeal,
-                        labelStyle: TextStyle(color: isSelected ? AppTheme.primaryTeal : AppTheme.textSecondary),
-                        side: BorderSide(color: isSelected ? AppTheme.primaryTeal : AppTheme.borderColor),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  children: List.generate(
+                    6,
+                    (index) => Shimmer.fromColors(
+                      baseColor: Colors.grey.shade200,
+                      highlightColor: Colors.grey.shade50,
+                      child: Container(
+                        height: 40,
+                        width: 100,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
                       ),
-                    );
-                  },
+                    ).paddingOnly(right: 10),
+                  ).toList(),
                 ),
-              ).paddingOnly(top: 16);
-            }),
-          ],
-        ),
+              ).paddingOnly(top: 10);
+            }
+            return SizedBox(
+              height: 40,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: ctrl.categories.length,
+                itemBuilder: (context, index) {
+                  final cat = ctrl.categories[index];
+                  final isSelected = ctrl.selectedCategoryId.value == cat.id;
+                  return Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(cat.name, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
+                      selected: isSelected,
+                      onSelected: (_) {
+                        ctrl.filterByCategory(cat.id);
+                        setState(() {});
+                      },
+                      backgroundColor: Colors.white,
+                      selectedColor: AppTheme.primaryTeal.withOpacity(0.1),
+                      checkmarkColor: AppTheme.primaryTeal,
+                      labelStyle: TextStyle(color: isSelected ? AppTheme.primaryTeal : AppTheme.textSecondary),
+                      side: BorderSide(color: isSelected ? AppTheme.primaryTeal : AppTheme.borderColor),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  );
+                },
+              ),
+            ).paddingOnly(top: 10);
+          }),
+        ],
       ),
     );
   }
@@ -213,7 +239,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
   Widget _buildContent() {
     return Obx(() {
       if (ctrl.isLoading.value && ctrl.doctors.isEmpty) {
-        return SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
+        return SliverList(delegate: SliverChildBuilderDelegate((context, index) => _buildDoctorShimmerCard(), childCount: 6));
       }
       if (ctrl.filteredDoctors.isEmpty) {
         return SliverFillRemaining(child: _buildEmptyState());
@@ -242,7 +268,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
       () => ctrl.isLoadingMore.value
           ? const Padding(
               padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
             )
           : const SizedBox.shrink(),
     );
@@ -290,7 +316,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
           ),
           child: ClipOval(
             child: Image.network(
-              APIConfig.resourceBaseURL + doctor.profileImage.toString(),
+              helper.getAWSImage(doctor.profileImage.toString()),
               fit: BoxFit.cover,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
@@ -308,21 +334,19 @@ class _SpecialistsListState extends State<SpecialistsList> {
             ),
           ),
         ),
-        Obx(() {
-          return Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: ctrl.showAvailableOnly.value ? AppTheme.successGreen : AppTheme.emergencyRed,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
-              ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: doctor.isAvailable ? AppTheme.successGreen : AppTheme.emergencyRed,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 3),
             ),
-          );
-        }),
+          ),
+        ),
       ],
     );
   }
@@ -427,6 +451,92 @@ class _SpecialistsListState extends State<SpecialistsList> {
     );
   }
 
+  Widget _buildDoctorShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 16,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 80,
+                      height: 14,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 12,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                        ),
+                        const SizedBox(width: 20),
+                        Container(
+                          width: 60,
+                          height: 12,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 100,
+                      height: 12,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 24,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 70,
+                          height: 24,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 50,
+                height: 20,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -438,10 +548,13 @@ class _SpecialistsListState extends State<SpecialistsList> {
           style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
         ),
         const SizedBox(height: 8),
-        Text(
-          'Try adjusting your filters or search terms',
-          style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight),
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
+            'Try adjusting your filters or search terms',
+            style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textLight),
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );

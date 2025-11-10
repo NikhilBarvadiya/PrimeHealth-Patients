@@ -14,6 +14,7 @@ import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/booking_details/booking_details_ctrl.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/calling_view.dart';
+import 'package:shimmer/shimmer.dart';
 
 class BookingDetails extends StatelessWidget {
   final String bookingId;
@@ -50,7 +51,7 @@ class BookingDetails extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                icon: Icon(CupertinoIcons.phone, color: AppTheme.textPrimary, size: 24),
+                icon: Icon(CupertinoIcons.phone, color: AppTheme.textPrimary, size: 20),
                 onPressed: () => _onCallAction(context, CallType.voice, ctrl),
               ),
               IconButton(
@@ -59,10 +60,10 @@ class BookingDetails extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 24),
+                icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 20),
                 onPressed: () => _onCallAction(context, CallType.video, ctrl),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
             ],
           ),
           body: Obx(() => _buildBody(context, ctrl)),
@@ -107,14 +108,366 @@ class BookingDetails extends StatelessWidget {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(color: AppTheme.primaryTeal),
-          const SizedBox(height: 16),
-          Text('Loading booking details...', style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textSecondary)),
-        ],
+    return RefreshIndicator(
+      onRefresh: () async {},
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildStatusCardShimmer(),
+            const SizedBox(height: 20),
+            _buildDoctorCardShimmer(),
+            const SizedBox(height: 20),
+            _buildAppointmentDetailsShimmer(),
+            const SizedBox(height: 20),
+            _buildPatientNotesShimmer(),
+            const SizedBox(height: 20),
+            _buildReviewSectionShimmer(),
+            const SizedBox(height: 20),
+            _buildActionButtonsShimmer(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCardShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 18,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: 80,
+                    height: 12,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 60,
+              height: 24,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDoctorCardShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 100,
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+                const Spacer(),
+                Container(
+                  width: 40,
+                  height: 20,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 16,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 80,
+                        height: 12,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              child: Row(
+                children: [
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      height: 12,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppointmentDetailsShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 140,
+              height: 16,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(
+              6,
+              (index) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 12,
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 100,
+                            height: 14,
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPatientNotesShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 80,
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 12,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    height: 12,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: 200,
+                    height: 12,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReviewSectionShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 100,
+                  height: 16,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 120,
+                              height: 14,
+                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              width: 80,
+                              height: 12,
+                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    height: 36,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtonsShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade50,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -142,7 +495,7 @@ class BookingDetails extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async => await ctrl.refreshBooking(),
       child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -297,7 +650,7 @@ class BookingDetails extends StatelessWidget {
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
           color: AppTheme.backgroundLight,
-          child: const Center(child: CircularProgressIndicator()),
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         ),
         errorWidget: (context, url, error) => _buildDefaultDoctorImage(),
       );
@@ -444,7 +797,7 @@ class BookingDetails extends StatelessWidget {
                   icon: Icon(Icons.edit_rounded, size: 18, color: AppTheme.primaryTeal),
                   onPressed: () => _showEditReviewDialog(ctrl, booking),
                   padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(),
+                  constraints: const BoxConstraints(),
                 ),
             ],
           ),
@@ -699,7 +1052,7 @@ class BookingDetails extends StatelessWidget {
                   controller: commentController,
                   minLines: 1,
                   maxLines: 3,
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                   decoration: InputDecoration(
                     labelText: 'Your Review (Optional)',
                     labelStyle: GoogleFonts.inter(color: AppTheme.textSecondary),

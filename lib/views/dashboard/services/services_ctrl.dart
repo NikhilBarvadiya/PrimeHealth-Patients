@@ -78,15 +78,15 @@ class ServicesCtrl extends GetxController {
 
   void searchServices(String query) {
     searchQuery.value = query.trim();
-    _resetAndReload();
+    resetAndReload();
   }
 
   void filterByCategory(String categoryId) {
     selectedCategoryId.value = categoryId;
-    _resetAndReload();
+    resetAndReload();
   }
 
-  void _resetAndReload() {
+  void resetAndReload() {
     currentPage.value = 1;
     services.clear();
     loadServices(initial: true);
