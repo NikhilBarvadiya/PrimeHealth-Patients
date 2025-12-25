@@ -373,6 +373,7 @@ class Profile extends StatelessWidget {
                 TextField(
                   controller: TextEditingController(text: ctrl.user.value.allergies?.join(', ') ?? ''),
                   maxLines: 2,
+                  textInputAction: TextInputAction.done,
                   style: GoogleFonts.poppins(color: Colors.black.withOpacity(0.7), fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Enter allergies separated by commas',
@@ -424,6 +425,7 @@ class Profile extends StatelessWidget {
                       ? TextInputType.emailAddress
                       : TextInputType.text,
                   maxLines: maxLines,
+                  textInputAction: TextInputAction.done,
                   style: GoogleFonts.poppins(color: Colors.black.withOpacity(0.7), fontSize: 14),
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
