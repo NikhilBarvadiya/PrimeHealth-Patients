@@ -152,7 +152,7 @@ class _DashboardState extends State<Dashboard> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Get.close(1),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textSecondary,
                         side: BorderSide(color: AppTheme.borderColor),
@@ -166,7 +166,7 @@ class _DashboardState extends State<Dashboard> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Get.back();
+                        Get.close(1);
                         SystemNavigator.pop();
                       },
                       style: ElevatedButton.styleFrom(

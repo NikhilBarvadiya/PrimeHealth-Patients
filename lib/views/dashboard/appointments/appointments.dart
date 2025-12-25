@@ -662,7 +662,7 @@ class Appointments extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Get.back(),
+                        onPressed: () => Get.close(1),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textSecondary,
                           side: BorderSide(color: AppTheme.borderColor),
@@ -677,7 +677,7 @@ class Appointments extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: rating > 0
                             ? () async {
-                                Get.back();
+                                Get.close(1);
                                 if (isEdit) {
                                   await ctrl.updateReview(booking.id!, rating, commentController.text);
                                 } else {
@@ -735,7 +735,7 @@ class Appointments extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Get.close(1),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textSecondary,
                         side: BorderSide(color: AppTheme.borderColor),
@@ -750,7 +750,7 @@ class Appointments extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         ctrl.cancelBooking(booking.id!);
-                        Get.back();
+                        Get.close(1);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.emergencyRed,

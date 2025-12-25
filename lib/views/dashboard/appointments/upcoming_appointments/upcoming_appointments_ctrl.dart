@@ -126,7 +126,7 @@ class UpcomingAppointmentsCtrl extends GetxController {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Get.close(1),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textSecondary,
                         side: BorderSide(color: AppTheme.borderColor),
@@ -141,7 +141,7 @@ class UpcomingAppointmentsCtrl extends GetxController {
                     child: ElevatedButton(
                       onPressed: () {
                         cancelBooking(index);
-                        Get.back();
+                        Get.close(1);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.emergencyRed,

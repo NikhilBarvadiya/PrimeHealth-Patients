@@ -54,7 +54,7 @@ class _DateFilterDialogState extends State<DateFilterDialog> {
                         endDate = null;
                       });
                       widget.onFilterApplied(null, null);
-                      Get.back();
+                      Get.close(1);
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.textSecondary,
@@ -70,7 +70,7 @@ class _DateFilterDialogState extends State<DateFilterDialog> {
                   child: ElevatedButton(
                     onPressed: () {
                       widget.onFilterApplied(startDate, endDate);
-                      Get.back();
+                      Get.close(1);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryTeal,

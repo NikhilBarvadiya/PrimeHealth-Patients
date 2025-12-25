@@ -31,7 +31,7 @@ class UpcomingAppointments extends StatelessWidget {
             backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
           ),
           icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-          onPressed: () => Get.back(),
+          onPressed: () => Get.close(1),
         ),
       ),
       body: Obx(() {
@@ -192,7 +192,7 @@ class UpcomingAppointments extends StatelessWidget {
                 onPressed: () {
                   DashboardCtrl dashboardCtrl = Get.put(DashboardCtrl());
                   dashboardCtrl.changeTab(1);
-                  Get.back();
+                  Get.close(1);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryTeal,

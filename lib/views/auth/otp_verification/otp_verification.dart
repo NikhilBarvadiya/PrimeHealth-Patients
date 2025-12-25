@@ -51,7 +51,7 @@ class OtpVerification extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: IconButton(
-        onPressed: () => Get.back(),
+        onPressed: () => Get.close(1),
         style: IconButton.styleFrom(backgroundColor: AppTheme.backgroundLight, padding: const EdgeInsets.all(12)),
         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppTheme.textPrimary),
       ),

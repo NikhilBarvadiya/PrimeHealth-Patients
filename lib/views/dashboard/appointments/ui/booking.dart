@@ -135,7 +135,7 @@ class _BookingState extends State<Booking> {
   }
 
   void _showBookingSuccess() {
-    Get.back();
+    Get.close(1);
     toaster.success(
       'Appointment Booked Successfully! 🎉\n'
       '${_selectedService!.name} with ${_selectedDoctor!.name}\n'
@@ -191,7 +191,7 @@ class _BookingState extends State<Booking> {
             backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
           ),
           icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-          onPressed: () => Get.back(),
+          onPressed: () => Get.close(1),
         ),
       ),
       body: _isProcessing || _isLoadingData
@@ -904,7 +904,7 @@ class _BookingState extends State<Booking> {
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () async {
-              final DateTime now = DateTime.now();
+              final DateTime now = DateTime.now().add(Duration(days: 1));
               final DateTime? picked = await showDatePicker(
                 context: context,
                 initialDate: _selectedDate ?? now,

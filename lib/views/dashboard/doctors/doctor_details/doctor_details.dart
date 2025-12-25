@@ -99,7 +99,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.9)),
         ),
         icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-        onPressed: () => Get.back(),
+        onPressed: () => Get.close(1),
       ),
       actions: [
         Shimmer.fromColors(
@@ -169,7 +169,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.9)),
         ),
         icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-        onPressed: () => Get.back(),
+        onPressed: () => Get.close(1),
       ),
       actions: [
         IconButton(

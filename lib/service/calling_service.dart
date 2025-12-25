@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:prime_health_patients/models/appointment_model.dart';
 import 'package:prime_health_patients/models/calling_model.dart';
@@ -12,6 +13,8 @@ import 'package:prime_health_patients/utils/network/api_index.dart';
 import 'package:prime_health_patients/utils/network/api_manager.dart';
 import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
+import 'package:prime_health_patients/views/dashboard/appointments/appointments_ctrl.dart';
+import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
 import 'package:vibration/vibration.dart';
 
 String? lastHandledMessageId;
@@ -137,6 +140,15 @@ class CallingService {
             break;
           default:
             return;
+        }
+      } else {
+        RemoteNotification? notification = message.notification;
+        _showLocalNotification(id: notification!.hashCode, title: notification.title.toString(), body: notification.body.toString(), payload: jsonEncode(data));
+        final homeCtrl = Get.isRegistered<HomeCtrl>() ? Get.find<HomeCtrl>() : Get.put(HomeCtrl());
+        homeCtrl.loadAppointments();
+        if (Get.isRegistered<AppointmentsCtrl>()) {
+          final appointmentsCtrl = Get.find<AppointmentsCtrl>();
+          appointmentsCtrl.refreshBookings();
         }
       }
     }

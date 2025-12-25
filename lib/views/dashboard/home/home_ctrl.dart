@@ -4,6 +4,7 @@ import 'package:prime_health_patients/models/popular_doctor_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/storage.dart';
+import 'package:prime_health_patients/utils/toaster.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/booking_details/booking_details.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/booking.dart';
@@ -51,7 +52,7 @@ class HomeCtrl extends GetxController {
         regularServices.assignAll(data.map((item) => ServiceModel.fromApi(item)).toList());
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load services: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+      toaster.error('Failed to load services: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -66,7 +67,7 @@ class HomeCtrl extends GetxController {
         featuredDoctors.assignAll(data.map((item) => PopularDoctorModel.fromJson(item["doctor"])).toList());
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load doctors: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+      toaster.error('Failed to load doctors: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -81,7 +82,7 @@ class HomeCtrl extends GetxController {
         pendingAppointments.assignAll(data.map((item) => BookingModel.fromJson(item)).toList());
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load appointments: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+      toaster.error('Failed to load appointments: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }

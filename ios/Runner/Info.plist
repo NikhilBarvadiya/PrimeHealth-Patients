@@ -31,19 +31,25 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take profile photos, and enable video consultations with doctors.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photo library so you can select profile pictures, upload medical reports, or attach images during consultations.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>We need microphone access to enable voice and video calls with your doctor.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We use your location to find nearby hospitals, clinics, and doctors, and to show accurate maps.</string>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+        <string>fetch</string>
+    </array>
+    <key>NSUserNotificationUsageDescription</key>
+    <string>We send critical health alerts and appointment reminders and calling notification.</string>
 </dict>
 </plist>

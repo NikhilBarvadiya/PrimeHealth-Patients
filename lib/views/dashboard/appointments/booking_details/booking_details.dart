@@ -42,7 +42,7 @@ class BookingDetails extends StatelessWidget {
                 backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
               ),
               icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-              onPressed: () => Get.back(result: ctrl.booking.value),
+              onPressed: () => Navigator.pop(context, ctrl.booking.value),
             ),
             actions: [
               IconButton(
@@ -1072,7 +1072,7 @@ class BookingDetails extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Get.back(),
+                        onPressed: () => Get.close(1),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textSecondary,
                           side: BorderSide(color: AppTheme.borderColor),
@@ -1087,7 +1087,7 @@ class BookingDetails extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: rating > 0
                             ? () async {
-                                Get.back();
+                                Get.close(1);
                                 if (isEdit) {
                                   await ctrl.updateReview(rating, commentController.text);
                                 } else {
@@ -1145,7 +1145,7 @@ class BookingDetails extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Get.close(1),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textSecondary,
                         side: BorderSide(color: AppTheme.borderColor),
@@ -1160,7 +1160,7 @@ class BookingDetails extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         ctrl.cancelBooking();
-                        Get.back();
+                        Get.close(1);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.emergencyRed,

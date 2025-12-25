@@ -33,7 +33,7 @@ class Settings extends StatelessWidget {
                   backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
                 ),
                 icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-                onPressed: () => Get.back(),
+                onPressed: () => Get.close(1),
               ),
             ),
             SliverToBoxAdapter(
@@ -133,23 +133,6 @@ We're here to help you succeed!
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader('About'),
-                    const SizedBox(height: 16),
-                    _buildSettingsCard(
-                      children: [
-                        _buildSettingsTile(icon: Icons.info_outline, title: 'Version', subtitle: '1.0.0 (Build 123)', onTap: () {}),
-                        _buildDivider(),
-                        _buildSettingsTile(
-                          icon: Icons.update_outlined,
-                          title: 'Check for Updates',
-                          subtitle: 'Latest version available',
-                          onTap: () {
-                            Get.snackbar('Update Check', 'You have the latest version', snackPosition: SnackPosition.BOTTOM);
-                          },
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 40),
                     _buildAppFooter(),
                   ],
@@ -244,7 +227,7 @@ We're here to help you succeed!
               backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
             ),
             icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-            onPressed: () => Get.back(),
+            onPressed: () => Get.close(1),
           ),
         ),
         body: SingleChildScrollView(
@@ -293,7 +276,7 @@ We're here to help you succeed!
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Get.close(1),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -358,7 +341,7 @@ We're here to help you succeed!
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Get.close(1),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

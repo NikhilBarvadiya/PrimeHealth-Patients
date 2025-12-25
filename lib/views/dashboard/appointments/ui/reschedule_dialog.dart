@@ -66,7 +66,7 @@ class _RescheduleDialogState extends State<RescheduleDialog> {
       if (response != null && response['booking'] != null) {
         toaster.success('Appointment rescheduled successfully!');
         widget.onRescheduleSuccess();
-        Get.back();
+        Get.close(1);
       }
     } catch (error) {
       toaster.error('Reschedule failed: $error');
@@ -432,7 +432,7 @@ class _RescheduleDialogState extends State<RescheduleDialog> {
         children: [
           Expanded(
             child: OutlinedButton(
-              onPressed: _isProcessing ? null : () => Get.back(),
+              onPressed: _isProcessing ? null : () => Get.close(1),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.textSecondary,
                 side: BorderSide(color: AppTheme.borderColor),

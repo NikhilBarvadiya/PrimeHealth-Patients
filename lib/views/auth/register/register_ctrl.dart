@@ -206,7 +206,7 @@ class RegisterCtrl extends GetxController {
       final success = await authService.register(request);
       if (success) {
         _clearForm();
-        Get.back();
+        Get.close(1);
       }
     } catch (e) {
       toaster.error("Registration failed: ${e.toString()}");

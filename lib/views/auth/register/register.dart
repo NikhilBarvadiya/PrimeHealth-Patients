@@ -778,7 +778,7 @@ class Register extends StatelessWidget {
           if (ctrl.currentStep.value > 0) {
             ctrl.previousStep();
           } else {
-            Get.back();
+            Get.close(1);
           }
         },
         icon: Icon(ctrl.currentStep.value > 0 ? Icons.arrow_back_ios_new : Icons.arrow_back_ios_new, size: 18),
