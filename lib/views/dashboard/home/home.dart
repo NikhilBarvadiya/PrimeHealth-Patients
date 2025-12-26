@@ -33,6 +33,7 @@ class Home extends StatelessWidget {
             expandedHeight: 100,
             automaticallyImplyLeading: false,
             flexibleSpace: FlexibleSpaceBar(
+              centerTitle: false,
               collapseMode: CollapseMode.pin,
               background: Container(color: Colors.white),
               titlePadding: const EdgeInsets.only(left: 20, bottom: 16),

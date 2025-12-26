@@ -404,11 +404,12 @@ class _BookingState extends State<Booking> {
             children: [
               Icon(Icons.medical_services_rounded, color: AppTheme.primaryTeal, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Select Service',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              Expanded(
+                child: Text(
+                  'Select Service',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
               ),
-              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(color: AppTheme.emergencyRed.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
@@ -614,11 +615,12 @@ class _BookingState extends State<Booking> {
             children: [
               Icon(Icons.person_rounded, color: AppTheme.primaryTeal, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Select Doctor',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              Expanded(
+                child: Text(
+                  'Select Doctor',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
               ),
-              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(color: AppTheme.emergencyRed.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
@@ -886,11 +888,12 @@ class _BookingState extends State<Booking> {
             children: [
               Icon(Icons.calendar_today_rounded, color: AppTheme.primaryTeal, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Select Date',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              Expanded(
+                child: Text(
+                  'Select Date',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
               ),
-              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(color: AppTheme.emergencyRed.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
@@ -980,11 +983,12 @@ class _BookingState extends State<Booking> {
             children: [
               Icon(Icons.access_time_rounded, color: AppTheme.primaryTeal, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Select Time Slot',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              Expanded(
+                child: Text(
+                  'Select Time Slot',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
               ),
-              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(color: AppTheme.emergencyRed.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
