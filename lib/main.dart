@@ -28,7 +28,6 @@ Future<void> main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  await CallingInitMethod().initData();
   await preload();
   runApp(const RestartApp(child: MyApp()));
 }
@@ -47,6 +46,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    CallingInitMethod().initData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(

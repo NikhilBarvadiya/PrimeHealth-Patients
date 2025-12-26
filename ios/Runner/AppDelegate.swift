@@ -1,7 +1,7 @@
 import Flutter
 import UIKit
-import FirebaseCore  // ← ADD THIS
-import FirebaseMessaging  // ← ADD THIS
+import FirebaseCore
+import FirebaseMessaging
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,36 +9,41 @@ import FirebaseMessaging  // ← ADD THIS
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-
-    // 1. Initialize Firebase
+    // 1. Firebase configure
     FirebaseApp.configure()
 
-    // 2. Register plugins
-    GeneratedPluginRegistrant.register(with: self)
-
-    // 3. Request notification permissions (optional but recommended)
+    // 2. Push permission
     UNUserNotificationCenter.current().delegate = self
     let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
     UNUserNotificationCenter.current().requestAuthorization(
       options: authOptions,
-      completionHandler: { _, _ in }
+      completionHandler: { granted, error in
+        if granted {
+          DispatchQueue.main.async {
+            application.registerForRemoteNotifications()  // is needful
+          }
+        }
+      }
     )
-
+    // 3. Plugins register
+    GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-
-  // 4. Handle FCM token refresh
+  // 4. APNs Token Firebase
   override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     Messaging.messaging().apnsToken = deviceToken
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
-
-  // 5. Handle foreground notifications (optional)
+  // 5. Foreground notification
   override func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
-    completionHandler([.sound, .badge])
+    if #available(iOS 14.0, *) {
+        completionHandler([.banner, .sound, .badge])
+     } else {
+        completionHandler([.alert, .sound, .badge])
+     }
   }
 }

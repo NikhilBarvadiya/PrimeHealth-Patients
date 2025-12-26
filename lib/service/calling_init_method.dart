@@ -27,7 +27,6 @@ class CallingInitMethod {
     final hasPermissions = await PermissionService.requestAllPermissions();
     if (!hasPermissions && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Camera and microphone permissions required')));
-      return;
     }
     await CallingService().initialize();
     _setupFCMListeners();
