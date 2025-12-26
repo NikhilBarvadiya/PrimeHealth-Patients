@@ -10,7 +10,7 @@ class LocationService extends GetxService {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        toaster.error('Location services are disabled. Please enable them.');
+        toaster.warning('Location services are disabled. Please enable them.');
         return null;
       }
       LocationPermission permission = await Geolocator.checkPermission();

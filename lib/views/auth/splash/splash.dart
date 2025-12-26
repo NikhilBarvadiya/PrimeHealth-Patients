@@ -153,10 +153,10 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))],
+        image: DecorationImage(image: AssetImage("assets/fg_logo.png")),
       ),
       child: Stack(
         children: [
-          Center(child: Icon(Icons.health_and_safety_rounded, size: 48, color: AppTheme.primaryTeal)),
           if (_controller.status == AnimationStatus.forward)
             Positioned.fill(
               child: AnimatedBuilder(
@@ -176,7 +176,7 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   Widget _buildAppName() {
     return Text(
       'Prime Health',
-      style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.5),
+      style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.5),
     );
   }
 

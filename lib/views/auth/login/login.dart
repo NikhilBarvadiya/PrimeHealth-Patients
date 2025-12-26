@@ -55,8 +55,8 @@ class Login extends StatelessWidget {
               gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppTheme.primaryLight, AppTheme.primaryTeal]),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [BoxShadow(color: AppTheme.primaryTeal.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 8))],
+              image: DecorationImage(image: AssetImage("assets/fg_logo.png")),
             ),
-            child: const Icon(Icons.health_and_safety_rounded, color: Colors.white, size: 40),
           ),
           const SizedBox(height: 28),
           Text(

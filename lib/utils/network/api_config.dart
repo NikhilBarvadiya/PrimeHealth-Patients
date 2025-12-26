@@ -1,11 +1,11 @@
 class APIConfig {
   /// Live Auth
-  // static String apiBaseURL = "https://physio.itfuturz.in/api/patients/";
-  // static const String resourceBaseURL = "https://physio.itfuturz.in";
+  static String apiBaseURL = "https://primehealth.itfuturz.in/api/patients/";
+  static const String imageBaseURL = "https://primehealth.itfuturz.in/";
 
   /// Local Auth
-  static String apiBaseURL = "https://kczs8h2b-3300.inc1.devtunnels.ms/api/patients/";
-  static const String imageBaseURL = "https://kczs8h2b-3300.inc1.devtunnels.ms/";
+  // static String apiBaseURL = "https://kczs8h2b-3300.inc1.devtunnels.ms/api/patients/";
+  // static const String imageBaseURL = "https://kczs8h2b-3300.inc1.devtunnels.ms/";
 
   /// Payal Auth
   // static String apiBaseURL = "https://k0wv9hsb-3300.inc1.devtunnels.ms/api/patients/";

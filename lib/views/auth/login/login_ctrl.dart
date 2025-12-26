@@ -23,8 +23,8 @@ class LoginCtrl extends GetxController {
       String getToken = await CallingService().getToken() ?? "";
       final loginRequest = {'mobileNo': mobileCtrl.text.trim(), "fcm": getToken};
       final loginResponse = await authService.login(loginRequest);
-      if (loginResponse != null && loginResponse['patientId'] != null) {
-        Get.toNamed(AppRouteNames.verifyOtp, arguments: {'mobileNo': mobileCtrl.text.trim(), 'patientId': loginResponse['patientId']});
+      if (loginResponse != null && loginResponse['patient']?["id"] != null) {
+        Get.toNamed(AppRouteNames.verifyOtp, arguments: {'mobileNo': mobileCtrl.text.trim(), 'patientId': loginResponse['patient']["id"]});
       }
     } catch (err) {
       toaster.error('Login error: ${err.toString()}');

@@ -17,8 +17,8 @@
 
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:label="PrimeHealth Patients">
+        android:icon="@mipmap/launcher_icon"
+        android:label="Prime Health Patients">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -49,6 +49,7 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="To demonstrate how to use foreground services to show notifications" />
         </service>
+
         <receiver
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
             android:exported="false"
