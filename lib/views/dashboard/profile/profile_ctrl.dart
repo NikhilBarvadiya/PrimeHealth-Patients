@@ -10,6 +10,7 @@ import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/utils/toaster.dart';
 import 'package:prime_health_patients/views/auth/auth_service.dart';
 import 'package:prime_health_patients/views/dashboard/home/home_ctrl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileCtrl extends GetxController {
   var user = UserModel(id: '', fcm: '', name: '', email: '', mobileNo: '').obs;
@@ -177,12 +178,37 @@ class ProfileCtrl extends GetxController {
     }
   }
 
-  Future<void> deleteAccount() async {
+  Future<void> openPrivacyPolicy() async {
     try {
-      await clearStorage();
-      Get.offAllNamed(AppRouteNames.login);
+      final url = "https://prime-health-zeta.vercel.app";
+      final uri = Uri.parse(url);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      toaster.error('Failed to logout: ${e.toString()}');
+      toaster.error('Error: $e');
+    }
+  }
+
+  void openTermsOfService() async {
+    try {
+      final url = "https://itfuturz.in/support/prime_health_patients_Support.html";
+      final uri = Uri.parse(url);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      toaster.error('Error: $e');
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    const url = 'https://itfuturz.in/support/prime_health_patients_Delete.html';
+    try {
+      if (await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+        await clearStorage();
+        Get.offAllNamed(AppRouteNames.login);
+      } else {
+        toaster.error('Could not launch URL');
+      }
+    } catch (e) {
+      toaster.error('Error: $e');
     }
   }
 }

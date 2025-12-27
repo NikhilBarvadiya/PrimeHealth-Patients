@@ -51,21 +51,26 @@ class CallingService {
     });
   }
 
+  Future removeToken() async {
+    try {
+      await _firebaseMessaging.deleteToken();
+    } catch (err) {
+      return null;
+    }
+  }
+
   Future<String?> getToken() async {
     try {
       if (Platform.isAndroid) {
         final status = await Permission.notification.status;
         if (!status.isGranted) {
-          final result = await Permission.notification.request();
-          if (!result.isGranted) {
-            return null;
-          }
+          await Permission.notification.request();
         }
       }
-      String? token = await FirebaseMessaging.instance.getToken();
+      String? token = await _firebaseMessaging.getToken();
       if (token == null || token.isEmpty) {
         await Future.delayed(const Duration(seconds: 1));
-        token = await FirebaseMessaging.instance.getToken();
+        token = await _firebaseMessaging.getToken();
       }
       return token;
     } catch (err) {

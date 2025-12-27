@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/utils/decoration.dart';
-import 'package:prime_health_patients/utils/routes/route_name.dart';
+import 'package:prime_health_patients/utils/helper.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/profile/profile_ctrl.dart';
 
@@ -46,75 +46,11 @@ class Settings extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildSettingsCard(
                     children: [
-                      _buildSettingsTile(
-                        icon: Icons.privacy_tip_outlined,
-                        title: 'Privacy Policy',
-                        subtitle: 'How we protect your data',
-                        onTap: () => _showPolicyPage('Privacy Policy', '''
-At Therapist App, we are committed to protecting your privacy. This policy outlines how we collect, use, and safeguard your personal information. 
-
-**Data Collection**
-We collect only necessary data, such as name, email, and address, to provide physiotherapy services.
-
-**Data Usage**
-Your information is used to manage appointments, services, and communication.
-
-**Data Protection**
-We use encryption and secure storage to protect your data.
-
-**Sharing**
-We do not share your data with third parties without consent.
-
-For more details, contact us at support@therapistapp.com.
-                          '''),
-                      ),
+                      _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: 'Privacy Policy', subtitle: 'How we protect your data', onTap: ctrl.openPrivacyPolicy),
                       _buildDivider(),
-                      _buildSettingsTile(
-                        icon: Icons.description_outlined,
-                        title: 'Terms & Conditions',
-                        subtitle: 'App usage guidelines',
-                        onTap: () => _showPolicyPage('Terms & Conditions', '''
-By using Therapist App, you agree to the following terms:
-
-**Usage**
-The app is for physiotherapy-related services only.
-
-**Account**
-You are responsible for maintaining the security of your account.
-
-**Liability**
-We are not liable for any misuse of the app.
-
-**Updates**
-These terms may be updated periodically.
-
-For full terms, contact us at support@therapistapp.com.
-                          '''),
-                      ),
+                      _buildSettingsTile(icon: Icons.description_outlined, title: 'Terms & Conditions', subtitle: 'App usage guidelines', onTap: ctrl.openTermsOfService),
                       _buildDivider(),
-                      _buildSettingsTile(
-                        icon: Icons.help_outline,
-                        title: 'Help & Support',
-                        subtitle: 'Get help using the app',
-                        onTap: () => _showPolicyPage('Help & Support', '''
-**Getting Started**
-- Set up your profile with accurate information
-- Add your services and set availability
-- Manage appointments through the dashboard
-
-**Common Issues**
-- For login issues, try resetting your password
-- Ensure stable internet connection
-- Update app to latest version
-
-**Contact Support**
-Email: support@therapistapp.com
-Phone: +1-555-0123
-Hours: Mon-Fri, 9AM-6PM
-
-We're here to help you succeed!
-                          '''),
-                      ),
+                      _buildSettingsTile(icon: Icons.help_outline, title: 'Help & Support', subtitle: 'Get help using the app', onTap: () => helper.makePhoneCall("+919979066311")),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -208,43 +144,6 @@ We're here to help you succeed!
     );
   }
 
-  void _showPolicyPage(String title, String content) {
-    Get.to(
-      () => Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          title: Text(
-            title,
-            style: GoogleFonts.poppins(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 20),
-          ),
-          leading: IconButton(
-            style: ButtonStyle(
-              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-              backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
-            ),
-            icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-            onPressed: () => Get.close(1),
-          ),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
-            ),
-            child: Text(content, style: GoogleFonts.poppins(fontSize: 14, height: 1.6, color: Colors.grey[800])),
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showLogoutDialog(ProfileCtrl ctrl) {
     Get.dialog(
       Dialog(
@@ -286,10 +185,7 @@ We're here to help you succeed!
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        ctrl.logout();
-                        Get.offAllNamed(AppRouteNames.login);
-                      },
+                      onPressed: () => ctrl.logout(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -351,10 +247,7 @@ We're here to help you succeed!
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        ctrl.deleteAccount();
-                        Get.offAllNamed(AppRouteNames.login);
-                      },
+                      onPressed: () => ctrl.deleteAccount(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         padding: const EdgeInsets.symmetric(vertical: 12),

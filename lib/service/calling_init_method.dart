@@ -4,7 +4,6 @@ import 'package:prime_health_patients/models/appointment_model.dart';
 import 'package:prime_health_patients/models/calling_model.dart';
 import 'package:prime_health_patients/models/user_model.dart';
 import 'package:prime_health_patients/service/calling_service.dart';
-import 'package:prime_health_patients/service/permission_service.dart';
 import 'package:prime_health_patients/utils/config/session.dart';
 import 'package:prime_health_patients/utils/storage.dart';
 import 'package:prime_health_patients/views/dashboard/appointments/ui/calling_view.dart';
@@ -24,10 +23,6 @@ class CallingInitMethod {
   BuildContext get context => Get.context!;
 
   Future<void> initData() async {
-    final hasPermissions = await PermissionService.requestAllPermissions();
-    if (!hasPermissions && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Camera and microphone permissions required')));
-    }
     await CallingService().initialize();
     _setupFCMListeners();
   }

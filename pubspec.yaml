@@ -40,6 +40,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_offline: ^6.0.0
   new_version_plus: ^0.1.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
