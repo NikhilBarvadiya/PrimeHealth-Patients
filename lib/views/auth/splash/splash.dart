@@ -175,7 +175,7 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
 
   Widget _buildAppName() {
     return Text(
-      'Prime Health',
+      'Prime Health Patient',
       style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.5),
     );
   }

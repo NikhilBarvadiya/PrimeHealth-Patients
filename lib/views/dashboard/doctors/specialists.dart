@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/models/doctor_model.dart';
+import 'package:prime_health_patients/utils/decoration.dart';
 import 'package:prime_health_patients/utils/helper.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doctor_details.dart';
@@ -18,6 +19,7 @@ class SpecialistsList extends StatefulWidget {
 class _SpecialistsListState extends State<SpecialistsList> {
   final SpecialistsCtrl ctrl = Get.put(SpecialistsCtrl());
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -101,20 +103,22 @@ class _SpecialistsListState extends State<SpecialistsList> {
     return SliverAppBar(
       elevation: 0,
       toolbarHeight: 65,
-      backgroundColor: AppTheme.backgroundWhite,
       pinned: true,
       floating: true,
       automaticallyImplyLeading: false,
+      backgroundColor: AppTheme.primaryLight,
       title: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Top Specialists',
-            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+            style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
           ),
           const SizedBox(height: 4),
-          Text('${ctrl.filteredDoctors.length} ${ctrl.filteredDoctors.length == 1 ? 'doctor' : 'doctors'} available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+          Obx(() {
+            return Text('${ctrl.filteredDoctors.length} ${ctrl.filteredDoctors.length == 1 ? 'doctor' : 'doctors'} available', style: GoogleFonts.inter(fontSize: 14, color: Colors.white));
+          }),
         ],
       ),
       leading: IconButton(
@@ -123,7 +127,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
           padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
           backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
         ),
-        icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+        icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
         onPressed: () => Get.close(1),
       ),
       actions: [
@@ -132,21 +136,22 @@ class _SpecialistsListState extends State<SpecialistsList> {
           child: IconButton(
             style: ButtonStyle(
               shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
-              backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
+              padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+              backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.2)),
             ),
-            icon: const Icon(Icons.refresh, color: Colors.black87, size: 22),
+            icon: const Icon(Icons.refresh, color: Colors.white, size: 22),
             onPressed: () => ctrl.retry(),
             tooltip: 'Refresh doctors',
           ),
         ),
       ],
-      bottom: PreferredSize(preferredSize: const Size.fromHeight(118), child: _buildSearchFilter()),
+      bottom: PreferredSize(preferredSize: const Size.fromHeight(119), child: _buildSearchFilter()),
     );
   }
 
   Widget _buildSearchFilter() {
     return Container(
+      color: Colors.white,
       padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 8),
       child: Column(
         children: [
@@ -156,6 +161,7 @@ class _SpecialistsListState extends State<SpecialistsList> {
               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
             ),
             child: TextField(
+              controller: searchController,
               onChanged: ctrl.onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Search doctors, specialties...',
@@ -165,17 +171,27 @@ class _SpecialistsListState extends State<SpecialistsList> {
                   () => ctrl.searchQuery.isNotEmpty
                       ? IconButton(
                           icon: Icon(Icons.close_rounded, color: AppTheme.textSecondary),
-                          onPressed: () => ctrl.onSearchChanged(''),
+                          onPressed: () {
+                            searchController.clear();
+                            ctrl.onSearchChanged('');
+                          },
                           tooltip: 'Clear search',
                         )
                       : const SizedBox.shrink(),
                 ),
                 filled: true,
                 fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: decoration.colorScheme.primary, width: 1.5),
+                ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
-              style: GoogleFonts.inter(fontSize: 13),
+              style: GoogleFonts.inter(fontSize: 14),
               textInputAction: TextInputAction.search,
             ),
           ),

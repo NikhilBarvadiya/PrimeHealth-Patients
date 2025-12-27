@@ -14,7 +14,7 @@ import 'package:prime_health_patients/views/dashboard/doctors/doctor_details/doc
 import 'package:prime_health_patients/views/dashboard/services/ui/service_details.dart';
 
 class HomeCtrl extends GetxController {
-  var userName = ''.obs;
+  var userName = ''.obs, profileImage = ''.obs;
   var isLoading = false.obs;
 
   var featuredDoctors = <PopularDoctorModel>[].obs;
@@ -40,6 +40,7 @@ class HomeCtrl extends GetxController {
     final userData = await read(AppSession.userData);
     if (userData != null) {
       userName.value = userData['name'] ?? 'Patient';
+      profileImage.value = userData['profileImage'] ?? '';
     }
   }
 

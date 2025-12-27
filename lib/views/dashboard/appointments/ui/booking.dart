@@ -179,10 +179,10 @@ class _BookingState extends State<Booking> {
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.primaryLight,
         title: Text(
           'Book Appointment',
-          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
         ),
         leading: IconButton(
           style: ButtonStyle(
@@ -190,7 +190,7 @@ class _BookingState extends State<Booking> {
             padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
             backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
           ),
-          icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
           onPressed: () => Get.close(1),
         ),
       ),

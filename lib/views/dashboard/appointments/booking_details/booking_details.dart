@@ -30,10 +30,10 @@ class BookingDetails extends StatelessWidget {
           backgroundColor: AppTheme.backgroundLight,
           appBar: AppBar(
             elevation: 0,
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.primaryLight,
             title: Text(
               'Booking Details',
-              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
             ),
             leading: IconButton(
               style: ButtonStyle(
@@ -41,26 +41,26 @@ class BookingDetails extends StatelessWidget {
                 padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
                 backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
               ),
-              icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-              onPressed: () => Navigator.pop(context, ctrl.booking.value),
+              icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
+              onPressed: () => Get.close(1),
             ),
             actions: [
               IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: AppTheme.backgroundLight,
-                  padding: const EdgeInsets.all(8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                style: ButtonStyle(
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+                  backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
                 ),
-                icon: Icon(CupertinoIcons.phone, color: AppTheme.textPrimary, size: 20),
+                icon: Icon(CupertinoIcons.phone, color: AppTheme.primaryLight, size: 20),
                 onPressed: () => _onCallAction(context, CallType.voice, ctrl),
               ),
               IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: AppTheme.backgroundLight,
-                  padding: const EdgeInsets.all(8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                style: ButtonStyle(
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+                  backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
                 ),
-                icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 20),
+                icon: Icon(Icons.videocam_rounded, color: AppTheme.primaryLight, size: 20),
                 onPressed: () => _onCallAction(context, CallType.video, ctrl),
               ),
               const SizedBox(width: 10),

@@ -18,19 +18,19 @@ class UpcomingAppointments extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: AppTheme.primaryLight,
         title: Text(
           'Upcoming Appointments',
-          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
           style: ButtonStyle(
             shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
             backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
           ),
-          icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
           onPressed: () => Get.close(1),
         ),
       ),

@@ -42,22 +42,22 @@ class _CallHistoryState extends State<CallHistory> {
   SliverAppBar _buildAppBar(CallHistoryCtrl ctrl) {
     return SliverAppBar(
       elevation: 0,
-      backgroundColor: Colors.white,
       pinned: true,
       floating: true,
       automaticallyImplyLeading: false,
+      backgroundColor: AppTheme.primaryLight,
+      title: Text(
+        'Call History',
+        style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+      ),
       leading: IconButton(
         style: ButtonStyle(
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
           backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
         ),
-        icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+        icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
         onPressed: () => Get.close(1),
-      ),
-      title: Text(
-        'Call History',
-        style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
       ),
     );
   }

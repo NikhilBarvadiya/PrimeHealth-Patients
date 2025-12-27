@@ -18,6 +18,7 @@ class SpecialistsCtrl extends GetxController {
   void onInit() {
     super.onInit();
     _initializeData();
+    debounce(searchQuery, (_) => _resetAndReload(), time: const Duration(milliseconds: 500));
   }
 
   Future<void> _initializeData() async {
@@ -104,7 +105,6 @@ class SpecialistsCtrl extends GetxController {
 
   void onSearchChanged(String query) {
     searchQuery.value = query;
-    debounce(searchQuery, (_) => _resetAndReload(), time: const Duration(milliseconds: 500));
   }
 
   void _resetAndReload() {

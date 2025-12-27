@@ -23,6 +23,7 @@ class ServicesCtrl extends GetxController {
     super.onInit();
     loadCategories();
     loadServices(initial: true);
+    debounce(searchQuery, (_) => resetAndReload(), time: const Duration(milliseconds: 500));
   }
 
   Future<void> loadCategories() async {
@@ -78,7 +79,6 @@ class ServicesCtrl extends GetxController {
 
   void searchServices(String query) {
     searchQuery.value = query.trim();
-    resetAndReload();
   }
 
   void filterByCategory(String categoryId) {

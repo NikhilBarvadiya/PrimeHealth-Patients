@@ -28,20 +28,20 @@ class Appointments extends StatelessWidget {
             SliverAppBar(
               elevation: 0,
               toolbarHeight: 75,
-              backgroundColor: AppTheme.backgroundWhite,
               pinned: true,
               floating: true,
               automaticallyImplyLeading: false,
+              backgroundColor: AppTheme.primaryLight,
               title: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'My Appointments',
-                    style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                    style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
                   ),
                   const SizedBox(height: 4),
-                  Obx(() => Text('${ctrl.filteredBookings.length} ${ctrl.selectedFilter.value.toLowerCase()} appointments', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary))),
+                  Obx(() => Text('${ctrl.filteredBookings.length} ${ctrl.selectedFilter.value.toLowerCase()} appointments', style: GoogleFonts.inter(fontSize: 14, color: Colors.white))),
                 ],
               ),
               actions: [
@@ -49,9 +49,9 @@ class Appointments extends StatelessWidget {
                   style: ButtonStyle(
                     shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                     padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                    backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
+                    backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.2)),
                   ),
-                  icon: Icon(Icons.filter_alt_rounded, color: Colors.black87, size: 20),
+                  icon: Icon(Icons.filter_alt_rounded, color: Colors.white, size: 20),
                   onPressed: _showFilterDialog,
                 ),
                 const SizedBox(width: 10),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:prime_health_patients/utils/decoration.dart';
 import 'package:prime_health_patients/utils/routes/route_name.dart';
+import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/profile/profile_ctrl.dart';
 
 class Settings extends StatelessWidget {
@@ -13,44 +14,43 @@ class Settings extends StatelessWidget {
     final ctrl = Get.find<ProfileCtrl>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              elevation: 0,
-              backgroundColor: Colors.white,
-              pinned: true,
-              floating: true,
-              title: Text(
-                'Settings',
-                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
-              leading: IconButton(
-                style: ButtonStyle(
-                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                  backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
-                ),
-                icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-                onPressed: () => Get.close(1),
-              ),
+      backgroundColor: AppTheme.backgroundLight,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            elevation: 0,
+            pinned: true,
+            floating: true,
+            title: Text(
+              'Settings',
+              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader('Legal'),
-                    const SizedBox(height: 16),
-                    _buildSettingsCard(
-                      children: [
-                        _buildSettingsTile(
-                          icon: Icons.privacy_tip_outlined,
-                          title: 'Privacy Policy',
-                          subtitle: 'How we protect your data',
-                          onTap: () => _showPolicyPage('Privacy Policy', '''
+            backgroundColor: AppTheme.primaryLight,
+            leading: IconButton(
+              style: ButtonStyle(
+                shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+                backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
+              ),
+              icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
+              onPressed: () => Get.close(1),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader('Legal'),
+                  const SizedBox(height: 16),
+                  _buildSettingsCard(
+                    children: [
+                      _buildSettingsTile(
+                        icon: Icons.privacy_tip_outlined,
+                        title: 'Privacy Policy',
+                        subtitle: 'How we protect your data',
+                        onTap: () => _showPolicyPage('Privacy Policy', '''
 At Therapist App, we are committed to protecting your privacy. This policy outlines how we collect, use, and safeguard your personal information. 
 
 **Data Collection**
@@ -67,13 +67,13 @@ We do not share your data with third parties without consent.
 
 For more details, contact us at support@therapistapp.com.
                           '''),
-                        ),
-                        _buildDivider(),
-                        _buildSettingsTile(
-                          icon: Icons.description_outlined,
-                          title: 'Terms & Conditions',
-                          subtitle: 'App usage guidelines',
-                          onTap: () => _showPolicyPage('Terms & Conditions', '''
+                      ),
+                      _buildDivider(),
+                      _buildSettingsTile(
+                        icon: Icons.description_outlined,
+                        title: 'Terms & Conditions',
+                        subtitle: 'App usage guidelines',
+                        onTap: () => _showPolicyPage('Terms & Conditions', '''
 By using Therapist App, you agree to the following terms:
 
 **Usage**
@@ -90,13 +90,13 @@ These terms may be updated periodically.
 
 For full terms, contact us at support@therapistapp.com.
                           '''),
-                        ),
-                        _buildDivider(),
-                        _buildSettingsTile(
-                          icon: Icons.help_outline,
-                          title: 'Help & Support',
-                          subtitle: 'Get help using the app',
-                          onTap: () => _showPolicyPage('Help & Support', '''
+                      ),
+                      _buildDivider(),
+                      _buildSettingsTile(
+                        icon: Icons.help_outline,
+                        title: 'Help & Support',
+                        subtitle: 'Get help using the app',
+                        onTap: () => _showPolicyPage('Help & Support', '''
 **Getting Started**
 - Set up your profile with accurate information
 - Add your services and set availability
@@ -114,33 +114,32 @@ Hours: Mon-Fri, 9AM-6PM
 
 We're here to help you succeed!
                           '''),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader('Account'),
-                    const SizedBox(height: 16),
-                    _buildSettingsCard(
-                      children: [
-                        _buildSettingsTile(icon: Icons.logout_outlined, title: 'Logout', subtitle: 'Sign out of your account', color: Colors.orange, onTap: () => _showLogoutDialog(ctrl)),
-                        _buildDivider(),
-                        _buildSettingsTile(
-                          icon: Icons.delete_forever_outlined,
-                          title: 'Delete Account',
-                          subtitle: 'Permanently remove your account',
-                          color: Colors.red,
-                          onTap: () => _showDeleteAccountDialog(ctrl),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                    _buildAppFooter(),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  _buildSectionHeader('Account'),
+                  const SizedBox(height: 16),
+                  _buildSettingsCard(
+                    children: [
+                      _buildSettingsTile(icon: Icons.logout_outlined, title: 'Logout', subtitle: 'Sign out of your account', color: Colors.orange, onTap: () => _showLogoutDialog(ctrl)),
+                      _buildDivider(),
+                      _buildSettingsTile(
+                        icon: Icons.delete_forever_outlined,
+                        title: 'Delete Account',
+                        subtitle: 'Permanently remove your account',
+                        color: Colors.red,
+                        onTap: () => _showDeleteAccountDialog(ctrl),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  _buildAppFooter(),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

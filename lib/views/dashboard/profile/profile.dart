@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:prime_health_patients/utils/decoration.dart';
-import 'package:prime_health_patients/utils/helper.dart';
+import 'package:prime_health_patients/utils/network/api_config.dart';
+import 'package:prime_health_patients/utils/theme/light.dart';
+import 'package:prime_health_patients/views/dashboard/dashboard_ctrl.dart';
+import 'package:prime_health_patients/views/dashboard/doctors/specialists.dart';
 import 'package:prime_health_patients/views/dashboard/profile/profile_ctrl.dart';
+import 'package:prime_health_patients/views/dashboard/profile/ui/edit_profile.dart';
 import 'package:prime_health_patients/views/dashboard/profile/ui/settings.dart';
 
 class Profile extends StatelessWidget {
@@ -16,155 +19,222 @@ class Profile extends StatelessWidget {
       init: ProfileCtrl(),
       builder: (ctrl) {
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: AppTheme.backgroundLight,
           body: RefreshIndicator(
             onRefresh: () async => await ctrl.loadUserData(),
-            child: Obx(
-              () => CustomScrollView(
+            child: Obx(() {
+              return CustomScrollView(
                 slivers: [
-                  SliverAppBar(
-                    elevation: 0,
-                    backgroundColor: Colors.white,
-                    pinned: true,
-                    floating: true,
-                    automaticallyImplyLeading: false,
-                    title: Text(
-                      'Profile',
-                      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    actions: [
-                      if (!ctrl.isEditMode)
-                        IconButton(
-                          style: ButtonStyle(
-                            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                            padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                            backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
-                          ),
-                          icon: Icon(Icons.settings_outlined, color: decoration.colorScheme.primary, size: 20),
-                          onPressed: () => Get.to(() => const Settings()),
-                        ),
-                      if (ctrl.isEditMode)
-                        IconButton(
-                          style: ButtonStyle(
-                            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                            padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                            backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
-                          ),
-                          icon: Icon(Icons.save, color: decoration.colorScheme.primary, size: 20),
-                          onPressed: ctrl.saveProfile,
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          style: ButtonStyle(
-                            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                            padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-                            backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
-                          ),
-                          icon: Icon(ctrl.isEditMode ? Icons.edit_off_rounded : Icons.edit_outlined, color: ctrl.isEditMode ? Colors.red : decoration.colorScheme.primary, size: 20),
-                          onPressed: ctrl.toggleEditMode,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildSliverAppBar(ctrl, context),
                   if (ctrl.isLoading.value) const SliverToBoxAdapter(child: LinearProgressIndicator()),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: Get.height * .1),
                       child: Column(
                         children: [
-                          _buildProfileHeader(ctrl),
-                          const SizedBox(height: 24),
-                          _buildPersonalInfoSection(ctrl),
+                          _buildQuickActions(ctrl, context),
+                          const SizedBox(height: 20),
+                          _buildPersonalInfoCard(ctrl),
                           const SizedBox(height: 16),
-                          _buildMedicalInfoSection(ctrl),
+                          _buildHealthInfoCard(ctrl),
                           const SizedBox(height: 16),
-                          _buildEmergencyContactSection(ctrl),
+                          _buildEmergencyContactCard(ctrl),
+                          const SizedBox(height: 16),
+                          _buildAllergiesCard(ctrl),
                         ],
                       ),
                     ),
                   ),
                 ],
-              ),
-            ),
+              );
+            }),
           ),
         );
       },
     );
   }
 
-  Widget _buildProfileHeader(ProfileCtrl ctrl) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [decoration.colorScheme.primary, decoration.colorScheme.primary.withOpacity(0.8)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
+  Widget _buildSliverAppBar(ProfileCtrl ctrl, BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 280,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppTheme.primaryLight,
+      automaticallyImplyLeading: false,
+      flexibleSpace: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final isCollapsed = constraints.biggest.height <= kToolbarHeight + MediaQuery.of(context).padding.top + 20;
+          return FlexibleSpaceBar(
+            centerTitle: true,
+            title: AnimatedOpacity(
+              opacity: isCollapsed ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Text(
+                'My Profile',
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+              ),
+            ),
+            background: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppTheme.primaryLight, AppTheme.primaryTeal]),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildProfileAvatar(ctrl),
+                    const SizedBox(height: 16),
+                    Obx(
+                      () => Text(
+                        ctrl.user.value.name,
+                        style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Obx(() => Text(ctrl.user.value.email, style: GoogleFonts.inter(fontSize: 14, color: Colors.white.withOpacity(0.9)))),
+                    const SizedBox(height: 8),
+                    Obx(
+                      () => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.phone_rounded, size: 16, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Text(
+                              ctrl.user.value.mobileNo,
+                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ).paddingOnly(left: 15, right: 15),
+              ),
+            ),
+          );
+        },
       ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: !ctrl.isEditMode ? null : () => ctrl.pickAvatar(),
-            child: Stack(
-              children: [
-                Obx(() {
-                  final hasProfileImage = ctrl.user.value.profileImage?.isNotEmpty ?? false;
-                  final hasAvatar = ctrl.avatar.value != null;
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-                      image: hasAvatar
-                          ? DecorationImage(image: FileImage(ctrl.avatar.value!), fit: BoxFit.cover)
-                          : (hasProfileImage ? DecorationImage(image: NetworkImage(helper.getAWSImage(ctrl.user.value.profileImage.toString())), fit: BoxFit.cover) : null),
-                    ),
-                    child: !hasProfileImage && !hasAvatar ? Icon(Icons.person_rounded, size: 40, color: Colors.white) : null,
-                  );
-                }),
-                if (ctrl.isEditMode)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: Icon(Icons.camera_alt, size: 16, color: decoration.colorScheme.primary),
-                    ),
-                  ),
-              ],
+      actions: [
+        IconButton(
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.white.withOpacity(0.2),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          icon: Icon(Icons.edit, color: Colors.white, size: 22),
+          onPressed: () => Get.to(() => const EditProfile()),
+          tooltip: 'Edit Profile',
+        ),
+        IconButton(
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.white.withOpacity(0.2),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          icon: Icon(Icons.settings_outlined, color: Colors.white, size: 22),
+          onPressed: () => Get.to(() => const Settings()),
+        ),
+        const SizedBox(width: 10),
+      ],
+    );
+  }
+
+  Widget _buildProfileAvatar(ProfileCtrl ctrl) {
+    return Stack(
+      children: [
+        Obx(() {
+          final hasProfileImage = ctrl.user.value.profileImage?.isNotEmpty ?? false;
+          return Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 5))],
+              image: hasProfileImage ? DecorationImage(image: NetworkImage(APIConfig.imageBaseURL + ctrl.user.value.profileImage!), fit: BoxFit.cover) : null,
+            ),
+            child: !hasProfileImage ? Icon(Icons.person_rounded, size: 50, color: AppTheme.primaryLight.withOpacity(0.5)) : null,
+          );
+        }),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: () => ctrl.pickAvatar(),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryTeal,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (ctrl.isEditMode)
-                  _buildEditTextField(ctrl.nameController, 'Full Name')
-                else
-                  Obx(
-                    () => Text(
-                      ctrl.user.value.name.isNotEmpty ? ctrl.user.value.name : 'No Name',
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                if (ctrl.isEditMode)
-                  _buildEditTextField(ctrl.emailController, 'Email Address', isEmail: true)
-                else
-                  Obx(() => Text(ctrl.user.value.email.isNotEmpty ? ctrl.user.value.email : 'No Email', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withOpacity(0.9)))),
-              ],
-            ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions(ProfileCtrl ctrl, BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildActionCard(icon: Icons.people_alt_rounded, label: 'Top Specialists', color: AppTheme.primaryTeal, onTap: () => Get.to(() => SpecialistsList())),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildActionCard(
+            icon: Icons.calendar_today_rounded,
+            label: 'Appointments',
+            color: AppTheme.primaryTeal,
+            onTap: () {
+              DashboardCtrl dashboardCtrl = Get.put(DashboardCtrl());
+              dashboardCtrl.changeTab(2);
+            },
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPersonalInfoSection(ProfileCtrl ctrl) {
+  Widget _buildPersonalInfoCard(ProfileCtrl ctrl) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -175,39 +245,41 @@ class Profile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 6),
+            padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(Icons.person_outline, color: decoration.colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(Icons.person_outline_rounded, color: AppTheme.primaryTeal, size: 22),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   'Personal Information',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                 ),
               ],
             ),
           ),
-          if (ctrl.isEditMode) ...[
-            _buildEditField('Full Name', ctrl.nameController, Icons.person_2_rounded),
-            _buildEditField('Email Address', ctrl.emailController, Icons.email_rounded, isEmail: true),
-            _buildEditField('Date of Birth', ctrl.dateOfBirthController, Icons.calendar_today),
-            _buildEditField('City', ctrl.cityController, Icons.location_city_rounded),
-            _buildEditField('State', ctrl.stateController, Icons.map_outlined),
-            _buildEditField('Country', ctrl.countryController, Icons.home_outlined, maxLines: 2),
-          ] else ...[
-            _buildInfoTile(Icons.phone_outlined, 'Mobile', ctrl.user.value.mobileNo.toString()),
-            _buildInfoTile(Icons.calendar_today, 'Date of Birth', ctrl.user.value.dateOfBirth ?? 'Not set'),
-            _buildInfoTile(Icons.transgender, 'Gender', ctrl.user.value.gender ?? 'Not set'),
-            _buildInfoTile(Icons.location_city_rounded, 'City', ctrl.user.value.city),
-            _buildInfoTile(Icons.map_outlined, 'State', ctrl.user.value.state),
-            _buildInfoTile(Icons.home_outlined, 'Country', ctrl.user.value.country),
-          ],
+          const Divider(height: 1),
+
+          Obx(() => _buildInfoRow(icon: Icons.location_on_rounded, label: 'Location', value: '${ctrl.user.value.city}, ${ctrl.user.value.state}, ${ctrl.user.value.country}')),
+          Obx(
+            () => _buildInfoRow(
+              icon: Icons.cake_rounded,
+              label: 'Date of Birth',
+              value: ctrl.user.value.dateOfBirth == null || ctrl.user.value.dateOfBirth!.isEmpty
+                  ? 'Not provided'
+                  : DateFormat('MMM dd, yyyy').format(DateTime.parse(ctrl.user.value.dateOfBirth.toString())),
+            ),
+          ),
+          Obx(() => _buildInfoRow(icon: Icons.wc_rounded, label: 'Gender', value: ctrl.user.value.gender ?? 'Not provided', isLast: true)),
         ],
       ),
     );
   }
 
-  Widget _buildMedicalInfoSection(ProfileCtrl ctrl) {
+  Widget _buildHealthInfoCard(ProfileCtrl ctrl) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -218,31 +290,30 @@ class Profile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 6),
+            padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(Icons.medical_services_outlined, color: decoration.colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(Icons.favorite_rounded, color: AppTheme.primaryTeal, size: 22),
+                ),
+                const SizedBox(width: 12),
                 Text(
-                  'Medical Information',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+                  'Health Information',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                 ),
               ],
             ),
           ),
-          if (ctrl.isEditMode) ...[
-            _buildEditField('Blood Group', ctrl.bloodGroupController, Icons.bloodtype_outlined),
-            _buildAllergiesField(ctrl),
-          ] else ...[
-            _buildInfoTile(Icons.bloodtype_outlined, 'Blood Group', ctrl.user.value.bloodGroup ?? 'Not set'),
-            _buildAllergiesInfo(ctrl),
-          ],
+          const Divider(height: 1),
+          Obx(() => _buildInfoRow(icon: Icons.bloodtype_rounded, label: 'Blood Group', value: ctrl.user.value.bloodGroup ?? 'Not provided', isLast: true)),
         ],
       ),
     );
   }
 
-  Widget _buildEmergencyContactSection(ProfileCtrl ctrl) {
+  Widget _buildEmergencyContactCard(ProfileCtrl ctrl) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -253,213 +324,141 @@ class Profile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 6),
+            padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(Icons.emergency_outlined, color: decoration.colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(Icons.phone_in_talk_rounded, color: AppTheme.primaryTeal, size: 22),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   'Emergency Contact',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                 ),
               ],
             ),
           ),
-          if (ctrl.isEditMode) ...[
-            _buildEditField('Emergency Contact Name', ctrl.emergencyNameController, Icons.person_outline),
-            _buildEditField('Emergency Contact Mobile', ctrl.emergencyMobileController, Icons.phone_outlined, isPhone: true),
-          ] else ...[
-            _buildInfoTile(Icons.person_outline, 'Emergency Contact', ctrl.user.value.emergencyName),
-            _buildInfoTile(Icons.phone_outlined, 'Emergency Mobile', ctrl.user.value.emergencyMobile),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoTile(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: decoration.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: decoration.colorScheme.primary, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  value.isEmpty
-                      ? 'Not set'
-                      : label == "Date of Birth"
-                      ? DateFormat('MMM d, yyyy').format(DateTime.tryParse(value.toString()) ?? DateTime.now()).toString()
-                      : value,
-                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87),
-                ),
-              ],
-            ),
+          const Divider(height: 1),
+          Obx(() => _buildInfoRow(icon: Icons.person_rounded, label: 'Contact Name', value: ctrl.user.value.emergencyName.isNotEmpty ? ctrl.user.value.emergencyName : 'Not provided')),
+          Obx(
+            () => _buildInfoRow(icon: Icons.phone_rounded, label: 'Contact Number', value: ctrl.user.value.emergencyMobile.isNotEmpty ? ctrl.user.value.emergencyMobile : 'Not provided', isLast: true),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAllergiesInfo(ProfileCtrl ctrl) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
+  Widget _buildAllergiesCard(ProfileCtrl ctrl) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: decoration.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(Icons.warning_outlined, color: decoration.colorScheme.primary, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: AppTheme.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(Icons.warning_amber_rounded, color: AppTheme.primaryTeal, size: 22),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   'Allergies',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 6),
-                Obx(
-                  () => Text(
-                    ctrl.user.value.allergies?.isNotEmpty == true ? ctrl.user.value.allergies!.join(', ') : 'No allergies',
-                    style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87),
-                  ),
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                 ),
               ],
             ),
           ),
+          const Divider(height: 1),
+          Obx(() {
+            final allergies = ctrl.user.value.allergies;
+            if (allergies == null || allergies.isEmpty) {
+              return Padding(padding: const EdgeInsets.all(20), child: _buildEmptyState('No allergies recorded', Icons.check_circle_outline_rounded));
+            }
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: allergies.map((allergy) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryTeal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.warning_rounded, size: 16, color: AppTheme.primaryTeal),
+                        const SizedBox(width: 6),
+                        Text(
+                          allergy.toString(),
+                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.primaryTeal),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildAllergiesField(ProfileCtrl ctrl) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: decoration.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(Icons.warning_outlined, color: decoration.colorScheme.primary, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Allergies',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: TextEditingController(text: ctrl.user.value.allergies?.join(', ') ?? ''),
-                  maxLines: 2,
-                  textInputAction: TextInputAction.done,
-                  style: GoogleFonts.poppins(color: Colors.black.withOpacity(0.7), fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Enter allergies separated by commas',
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+  Widget _buildInfoRow({required IconData icon, required String label, required String value, bool isLast = false}) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Icon(icon, color: AppTheme.textSecondary, size: 20),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: decoration.colorScheme.primary, width: 2),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        if (!isLast) const Divider(height: 1, indent: 56),
+      ],
     );
   }
 
-  Widget _buildEditField(String label, TextEditingController controller, IconData icon, {bool isPhone = false, bool isEmail = false, int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: decoration.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: decoration.colorScheme.primary, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: controller,
-                  keyboardType: isPhone
-                      ? TextInputType.phone
-                      : isEmail
-                      ? TextInputType.emailAddress
-                      : TextInputType.text,
-                  maxLines: maxLines,
-                  textInputAction: TextInputAction.done,
-                  style: GoogleFonts.poppins(color: Colors.black.withOpacity(0.7), fontSize: 14),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: decoration.colorScheme.primary, width: 2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEditTextField(TextEditingController controller, String hintText, {bool isEmail = false}) {
-    return TextField(
-      readOnly: true,
-      controller: controller,
-      keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
-      style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 12),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: GoogleFonts.poppins(color: Colors.black.withOpacity(0.7), fontSize: 12),
-        border: InputBorder.none,
-        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-        isDense: true,
-      ),
+  Widget _buildEmptyState(String message, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: AppTheme.primaryTeal),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(message, style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+        ),
+      ],
     );
   }
 }

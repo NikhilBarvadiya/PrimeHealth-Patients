@@ -17,45 +17,6 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  final List<BottomNavigationBarItem> _navItems = [
-    BottomNavigationBarItem(
-      icon: Container(padding: const EdgeInsets.all(8), child: const Icon(Icons.home_outlined, size: 24)),
-      activeIcon: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppTheme.primaryTeal, shape: BoxShape.circle),
-        child: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
-      ),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Container(padding: const EdgeInsets.all(8), child: const Icon(Icons.medical_services_outlined, size: 24)),
-      activeIcon: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppTheme.primaryTeal, shape: BoxShape.circle),
-        child: const Icon(Icons.medical_services_rounded, color: Colors.white, size: 22),
-      ),
-      label: 'Services',
-    ),
-    BottomNavigationBarItem(
-      icon: Container(padding: const EdgeInsets.all(8), child: const Icon(Icons.calendar_today_outlined, size: 24)),
-      activeIcon: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppTheme.primaryTeal, shape: BoxShape.circle),
-        child: const Icon(Icons.calendar_today_rounded, color: Colors.white, size: 22),
-      ),
-      label: 'Appointments',
-    ),
-    BottomNavigationBarItem(
-      icon: Container(padding: const EdgeInsets.all(8), child: const Icon(Icons.person_outlined, size: 24)),
-      activeIcon: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppTheme.primaryTeal, shape: BoxShape.circle),
-        child: const Icon(Icons.person_rounded, color: Colors.white, size: 22),
-      ),
-      label: 'Profile',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<DashboardCtrl>(
@@ -79,7 +40,7 @@ class _DashboardState extends State<Dashboard> {
               child: Scaffold(
                 backgroundColor: AppTheme.backgroundLight,
                 body: IndexedStack(index: ctrl.currentIndex.value, children: [Home(), Services(), Appointments(), Profile()]),
-                bottomNavigationBar: _buildBottomNavigationBar(ctrl),
+                bottomNavigationBar: _buildFastBottomNavBar(ctrl),
               ),
             ),
           );
@@ -88,28 +49,72 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildBottomNavigationBar(DashboardCtrl ctrl) {
+  Widget _buildFastBottomNavBar(DashboardCtrl ctrl) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      height: 65,
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 16, offset: const Offset(0, -4))],
-        border: Border(top: BorderSide(color: AppTheme.borderColor.withOpacity(0.5), width: 0.5)),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [BoxShadow(color: AppTheme.primaryLight.withOpacity(0.12), blurRadius: 16, offset: const Offset(0, 4))],
       ),
-      child: BottomNavigationBar(
-        currentIndex: ctrl.currentIndex.value,
-        onTap: ctrl.changeTab,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: AppTheme.primaryTeal,
-        unselectedItemColor: AppTheme.textLight,
-        selectedLabelStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, height: 1.4),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, height: 1.4),
-        elevation: 0,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        items: _navItems,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildFastNavItem(ctrl: ctrl, index: 0, icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
+          _buildFastNavItem(ctrl: ctrl, index: 1, icon: Icons.medical_services_outlined, activeIcon: Icons.medical_services_rounded, label: 'Services'),
+          _buildFastNavItem(ctrl: ctrl, index: 2, icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today_rounded, label: 'Appointments'),
+          _buildFastNavItem(ctrl: ctrl, index: 3, icon: Icons.person_outline, activeIcon: Icons.person_rounded, label: 'Profile'),
+        ],
       ),
     );
+  }
+
+  Widget _buildFastNavItem({required DashboardCtrl ctrl, required int index, required IconData icon, required IconData activeIcon, required String label}) {
+    return Obx(() {
+      final isActive = ctrl.currentIndex.value == index;
+      return GestureDetector(
+        onTap: () => ctrl.changeTab(index),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          color: Colors.transparent,
+          child: Center(
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              tween: Tween(begin: 0.0, end: isActive ? 1.0 : 0.0),
+              builder: (context, value, child) {
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12 + (4 * value), vertical: 8),
+                  decoration: BoxDecoration(
+                    color: !isActive ? Colors.transparent : null,
+                    gradient: !isActive ? null : LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppTheme.primaryLight.withOpacity(0.9), AppTheme.primaryTeal]),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: !isActive ? null : [BoxShadow(color: AppTheme.primaryLight.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 4))],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(isActive ? activeIcon : icon, size: 22, color: Color.lerp(Colors.grey.shade600, Colors.white, value)),
+                      if (value > 0.1) ...[
+                        SizedBox(width: 8 * value),
+                        Opacity(
+                          opacity: value,
+                          child: Text(
+                            label,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Future<void> _onWillPop(BuildContext context, DashboardCtrl ctrl) async {

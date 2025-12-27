@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -166,28 +167,28 @@ class _DoctorDetailsState extends State<DoctorDetails> {
         style: ButtonStyle(
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
-          backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.9)),
+          backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
         ),
-        icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+        icon: const Icon(Icons.arrow_back, color: AppTheme.primaryLight, size: 20),
         onPressed: () => Get.close(1),
       ),
       actions: [
         IconButton(
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.9),
-            padding: const EdgeInsets.all(8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          style: ButtonStyle(
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+            backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
           ),
-          icon: Icon(Icons.phone_rounded, color: AppTheme.textPrimary, size: 20),
+          icon: Icon(CupertinoIcons.phone, color: AppTheme.primaryLight, size: 20),
           onPressed: () => _onCallAction(context, CallType.voice),
         ),
         IconButton(
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.9),
-            padding: const EdgeInsets.all(8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          style: ButtonStyle(
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+            backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
           ),
-          icon: Icon(Icons.videocam_rounded, color: AppTheme.textPrimary, size: 20),
+          icon: Icon(Icons.videocam_rounded, color: AppTheme.primaryLight, size: 20),
           onPressed: () => _onCallAction(context, CallType.video),
         ),
         const SizedBox(width: 10),

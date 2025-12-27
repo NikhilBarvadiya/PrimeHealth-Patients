@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:prime_health_patients/models/service_model.dart';
+import 'package:prime_health_patients/utils/decoration.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:shimmer/shimmer.dart';
 import 'services_ctrl.dart';
@@ -17,12 +18,6 @@ class Services extends StatefulWidget {
 class _ServicesState extends State<Services> {
   final ServicesCtrl ctrl = Get.put(ServicesCtrl());
   final TextEditingController searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    ever(ctrl.searchQuery, (String q) => searchController.text = q);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,20 +39,20 @@ class _ServicesState extends State<Services> {
     return SliverAppBar(
       elevation: 0,
       toolbarHeight: 75,
-      backgroundColor: AppTheme.backgroundWhite,
       pinned: true,
       floating: true,
       automaticallyImplyLeading: false,
+      backgroundColor: AppTheme.primaryLight,
       title: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Our Services',
-            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
           ),
           const SizedBox(height: 4),
-          Text('${ctrl.services.length} services available', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+          Obx(() => Text('${ctrl.services.length} services available', style: GoogleFonts.inter(fontSize: 14, color: Colors.white))),
         ],
       ),
       actions: [
@@ -66,10 +61,10 @@ class _ServicesState extends State<Services> {
           child: IconButton(
             style: ButtonStyle(
               shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
-              backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
+              padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
+              backgroundColor: WidgetStatePropertyAll(Colors.white.withOpacity(0.2)),
             ),
-            icon: const Icon(Icons.refresh, color: Colors.black87, size: 22),
+            icon: const Icon(Icons.refresh, color: Colors.white, size: 22),
             onPressed: () => ctrl.resetAndReload(),
             tooltip: 'Refresh services',
           ),
@@ -96,24 +91,31 @@ class _ServicesState extends State<Services> {
                 hintText: 'Search services, specialties...',
                 hintStyle: GoogleFonts.inter(color: AppTheme.textLight),
                 prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 22),
-                suffixIcon: searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear_rounded, color: AppTheme.textSecondary, size: 20),
-                        onPressed: () {
-                          searchController.clear();
-                          ctrl.searchServices('');
-                        },
-                      )
-                    : null,
+                suffixIcon: Obx(
+                  () => ctrl.searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.close_rounded, color: AppTheme.textSecondary),
+                          onPressed: () {
+                            searchController.clear();
+                            ctrl.searchServices('');
+                          },
+                          tooltip: 'Clear search',
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 filled: true,
                 fillColor: AppTheme.backgroundLight,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: decoration.colorScheme.primary, width: 1.5),
+                ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
-              style: GoogleFonts.inter(fontSize: 13),
+              style: GoogleFonts.inter(fontSize: 14),
               onChanged: ctrl.searchServices,
             ),
           ),

@@ -62,7 +62,11 @@ class CallingService {
           }
         }
       }
-      final token = await FirebaseMessaging.instance.getToken();
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (token == null || token.isEmpty) {
+        await Future.delayed(const Duration(seconds: 1));
+        token = await FirebaseMessaging.instance.getToken();
+      }
       return token;
     } catch (err) {
       return null;
@@ -214,10 +218,7 @@ class CallingService {
     }
     final body = {"receiverToken": receiver.fcmToken, "callData": callData.toJson()};
     try {
-      final response = await ApiManager().call(APIIndex.sendNotification, body, ApiType.post);
-      if (response.status != 200 || response.data == null) {
-        toaster.warning(response.message ?? 'Failed to send notification');
-      }
+      await ApiManager().call(APIIndex.sendNotification, body, ApiType.post);
     } catch (err) {
       toaster.error('Notification send failed: ${err.toString()}');
     }

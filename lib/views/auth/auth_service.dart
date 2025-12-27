@@ -33,11 +33,13 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> login(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.login, request, ApiType.post);
-      if (response.status != 200 || response.data == null) {
+      if (response.status != 200 || response.data == null || response.data == 0) {
         toaster.warning(response.message ?? 'Failed to login');
         return null;
       }
       if (response.message == "OTP sent to your mobile number.") {
+        final patientId = response.data['patient']["id"] ?? response.data['patient']["_id"];
+        Get.toNamed(AppRouteNames.verifyOtp, arguments: {'mobileNo': response.data.text.trim(), 'patientId': patientId});
         return response.data;
       } else {
         await write(AppSession.token, response.data!["token"]);
@@ -70,7 +72,7 @@ class AuthService extends GetxService {
   Future<bool> verifyOTP(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.verifyOTP, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         if (response.data?['token'] != null) {
           await write(AppSession.token, response.data!["token"]);
           await write(AppSession.userData, response.data!["patient"]);
@@ -91,7 +93,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getProfile() async {
     try {
       final response = await ApiManager().call(APIIndex.getProfile, {}, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load profile');
@@ -107,7 +109,7 @@ class AuthService extends GetxService {
     try {
       final response = await ApiManager().call(APIIndex.updateProfile, request, ApiType.post);
       if (response.status == 200) {
-        if (response.data != null) {
+        if (response.data != null && response.data != 0) {
           await write(AppSession.userData, response.data);
         }
         toaster.success(response.message ?? 'Profile updated successfully');
@@ -125,7 +127,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getCategories() async {
     try {
       final response = await ApiManager().call(APIIndex.getCategories, {}, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load categories');
@@ -140,7 +142,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getServices(dynamic request) async {
     try {
       final response = await ApiManager().call(APIIndex.getServices, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load services');
@@ -155,7 +157,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getPopularDoctors(dynamic request) async {
     try {
       final response = await ApiManager().call(APIIndex.getPopularDoctors, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load doctors');
@@ -170,7 +172,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> searchDoctors(dynamic request) async {
     try {
       final response = await ApiManager().call(APIIndex.searchDoctors, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load doctors');
@@ -185,7 +187,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getDoctorDetails(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getDoctorDetails, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load doctor details');
@@ -200,7 +202,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getDoctorSlots(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getDoctorSlots, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load doctor slots');
@@ -215,7 +217,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getDoctorReviews(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getDoctorReviews, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load doctor reviews');
@@ -230,7 +232,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> bookAppointment(Map<String, dynamic> bookingData) async {
     try {
       final response = await ApiManager().call(APIIndex.bookAppointment, bookingData, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to book doctor appointment');
@@ -245,7 +247,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getServiceDoctors(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getServiceDoctors, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to get services & doctors');
@@ -260,7 +262,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getUpcomingAppointments(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getUpcomingAppointments, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load upcoming appointments');
@@ -275,7 +277,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getBookingHistory(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getBookingHistory, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load booking history');
@@ -290,7 +292,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getBookingDetails(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getBookingDetails, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to load booking details');
@@ -305,7 +307,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> rescheduleAppointment(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.rescheduleAppointment, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to reschedule appointment');
@@ -320,7 +322,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> cancelAppointment(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.cancelAppointment, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to cancel appointment');
@@ -335,7 +337,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> addRatingReview(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.addRatingReview, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to add rating review');
@@ -350,7 +352,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> updateRatingReview(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.updateRatingReview, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to update rating review');
@@ -365,7 +367,7 @@ class AuthService extends GetxService {
   Future<Map<String, dynamic>?> getCalls(Map<String, dynamic> request) async {
     try {
       final response = await ApiManager().call(APIIndex.getCalls, request, ApiType.post);
-      if (response.status == 200 && response.data != null) {
+      if (response.status == 200 && response.data != null && response.data != 0) {
         return response.data;
       } else {
         toaster.warning(response.message ?? 'Failed to get call history');

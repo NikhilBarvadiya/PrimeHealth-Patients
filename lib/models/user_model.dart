@@ -5,9 +5,9 @@ class UserModel {
   final String email;
   final String mobileNo;
   final String? dateOfBirth;
-  final String? gender;
+  String? gender;
   final String? bloodGroup;
-  final List<String>? allergies;
+  List<String>? allergies;
   final Map<String, dynamic>? address;
   final Map<String, dynamic>? emergencyContact;
   final String? profileImage;

@@ -6,6 +6,7 @@ import 'package:prime_health_patients/models/booking_model.dart';
 import 'package:prime_health_patients/models/popular_doctor_model.dart';
 import 'package:prime_health_patients/models/service_model.dart';
 import 'package:prime_health_patients/utils/helper.dart';
+import 'package:prime_health_patients/utils/network/api_config.dart';
 import 'package:prime_health_patients/utils/theme/light.dart';
 import 'package:prime_health_patients/views/dashboard/doctors/specialists.dart';
 import 'package:prime_health_patients/views/dashboard/home/call_history/call_history.dart';
@@ -27,39 +28,50 @@ class Home extends StatelessWidget {
           SliverAppBar(
             elevation: 0,
             toolbarHeight: 80,
-            backgroundColor: Colors.white,
             pinned: true,
             floating: true,
-            expandedHeight: 100,
             automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: false,
-              collapseMode: CollapseMode.pin,
-              background: Container(color: Colors.white),
-              titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-              title: Obx(
-                () => AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: ctrl.isLoading.value
-                      ? _buildAppBarShimmer()
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Good ${_getGreeting()}!',
-                              style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              ctrl.userName.value,
-                              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
+            backgroundColor: AppTheme.primaryLight,
+            title: Obx(() {
+              final hasProfileImage = ctrl.profileImage.isNotEmpty;
+              return Row(
+                spacing: 10.0,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 5))],
+                      image: hasProfileImage ? DecorationImage(image: NetworkImage(APIConfig.imageBaseURL + ctrl.profileImage.toString()), fit: BoxFit.cover) : null,
+                    ),
+                    child: !hasProfileImage ? Icon(Icons.person_rounded, size: 25, color: AppTheme.primaryLight) : null,
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: ctrl.isLoading.value
+                        ? _buildAppBarShimmer()
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Good ${_getGreeting()}!',
+                                style: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                ctrl.userName.value,
+                                style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                  ),
+                ],
+              );
+            }),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 10.0),
@@ -69,7 +81,7 @@ class Home extends StatelessWidget {
                     padding: WidgetStatePropertyAll(const EdgeInsets.all(8)),
                     backgroundColor: WidgetStatePropertyAll(Colors.grey[100]),
                   ),
-                  icon: const Icon(Icons.contacts, color: Colors.black87, size: 20),
+                  icon: const Icon(Icons.contacts, color: AppTheme.primaryLight, size: 20),
                   onPressed: () => Get.to(() => CallHistory()),
                 ),
               ),
@@ -83,6 +95,7 @@ class Home extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 16),
                   _buildBannerSection(),
                   const SizedBox(height: 16),
                   _buildSearchSection(),
