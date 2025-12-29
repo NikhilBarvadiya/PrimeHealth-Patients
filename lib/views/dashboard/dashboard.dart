@@ -50,22 +50,24 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildFastBottomNavBar(DashboardCtrl ctrl) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      height: 65,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [BoxShadow(color: AppTheme.primaryLight.withOpacity(0.12), blurRadius: 16, offset: const Offset(0, 4))],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildFastNavItem(ctrl: ctrl, index: 0, icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
-          _buildFastNavItem(ctrl: ctrl, index: 1, icon: Icons.medical_services_outlined, activeIcon: Icons.medical_services_rounded, label: 'Services'),
-          _buildFastNavItem(ctrl: ctrl, index: 2, icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today_rounded, label: 'Appointments'),
-          _buildFastNavItem(ctrl: ctrl, index: 3, icon: Icons.person_outline, activeIcon: Icons.person_rounded, label: 'Profile'),
-        ],
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        height: 65,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [BoxShadow(color: AppTheme.primaryLight.withOpacity(0.12), blurRadius: 16, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildFastNavItem(ctrl: ctrl, index: 0, icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
+            _buildFastNavItem(ctrl: ctrl, index: 1, icon: Icons.medical_services_outlined, activeIcon: Icons.medical_services_rounded, label: 'Services'),
+            _buildFastNavItem(ctrl: ctrl, index: 2, icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today_rounded, label: 'Appointments'),
+            _buildFastNavItem(ctrl: ctrl, index: 3, icon: Icons.person_outline, activeIcon: Icons.person_rounded, label: 'Profile'),
+          ],
+        ),
       ),
     );
   }
@@ -88,7 +90,13 @@ class _DashboardState extends State<Dashboard> {
                   padding: EdgeInsets.symmetric(horizontal: 12 + (4 * value), vertical: 8),
                   decoration: BoxDecoration(
                     color: !isActive ? Colors.transparent : null,
-                    gradient: !isActive ? null : LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppTheme.primaryLight.withOpacity(0.9), AppTheme.primaryTeal]),
+                    gradient: !isActive
+                        ? null
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [AppTheme.primaryLight.withOpacity(0.9), AppTheme.primaryTeal],
+                          ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: !isActive ? null : [BoxShadow(color: AppTheme.primaryLight.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 4))],
                   ),
