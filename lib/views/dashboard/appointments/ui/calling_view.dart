@@ -7,7 +7,6 @@ import 'package:prime_health_patients/models/user_model.dart';
 import 'package:prime_health_patients/service/agora_service.dart';
 import 'package:prime_health_patients/service/calling_init_method.dart';
 import 'package:prime_health_patients/service/calling_service.dart';
-import 'package:prime_health_patients/service/permission_service.dart';
 
 class CallingView extends StatefulWidget {
   final String channelName;
@@ -67,11 +66,6 @@ class _CallingViewState extends State<CallingView> with TickerProviderStateMixin
 
   Future<void> _initializeCall() async {
     try {
-      final hasPermissions = await PermissionService.requestAllPermissions();
-      if (!hasPermissions && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Camera and microphone permissions required')));
-        return;
-      }
       await _callService.initialize(isVoiceOnly: widget.callType == CallType.voice);
       _callService.onUserJoined = (uid) {
         setState(() {

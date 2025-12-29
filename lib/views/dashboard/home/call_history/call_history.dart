@@ -159,7 +159,7 @@ class _CallHistoryState extends State<CallHistory> {
             }
             final call = ctrl.filteredCalls[index];
             return _buildCallCard(call, ctrl).paddingOnly(bottom: 12);
-          }, childCount: ctrl.filteredCalls.length + (ctrl.hasMore.value ? 1 : 0)),
+          }, childCount: ctrl.filteredCalls.length),
         ),
       );
     });

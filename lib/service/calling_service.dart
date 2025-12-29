@@ -79,7 +79,7 @@ class CallingService {
   }
 
   Future<void> _initializeLocalNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/launcher_icon');
     const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(requestAlertPermission: true, requestBadgePermission: true, requestSoundPermission: true);
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     await _localNotifications.initialize(
@@ -102,7 +102,7 @@ class CallingService {
   }
 
   Future<void> handleBackgroundMessage(RemoteMessage message) async {
-    _handleMessage(message);
+    await _handleMessage(message);
   }
 
   void terminatedNotification() async {
@@ -152,7 +152,9 @@ class CallingService {
         }
       } else {
         RemoteNotification? notification = message.notification;
-        _showLocalNotification(id: notification!.hashCode, title: notification.title.toString(), body: notification.body.toString(), payload: jsonEncode(data));
+        if (notification != null) {
+          _showLocalNotification(id: notification.hashCode, title: notification.title ?? 'Notification', body: notification.body ?? '', payload: jsonEncode(data));
+        }
         final homeCtrl = Get.isRegistered<HomeCtrl>() ? Get.find<HomeCtrl>() : Get.put(HomeCtrl());
         homeCtrl.loadAppointments();
         if (Get.isRegistered<AppointmentsCtrl>()) {

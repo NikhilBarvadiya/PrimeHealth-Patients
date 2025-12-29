@@ -264,7 +264,7 @@ class EditProfile extends StatelessWidget {
                   label: 'Contact Number',
                   icon: Icons.phone_rounded,
                   hint: 'Enter emergency contact number',
-                  keyboardType: TextInputType.phone,
+                  keyboardType: TextInputType.numberWithOptions(signed: true),
                 ),
               ],
             ),
