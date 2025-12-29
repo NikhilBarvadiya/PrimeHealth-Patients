@@ -21,12 +21,12 @@ class CallingInitMethod {
   bool _isCallingViewOpen = false;
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  BuildContext get context => Get.context!;
+  BuildContext? get context => navigatorKey.currentContext;
 
   Future<void> initData() async {
     final hasPermissions = await PermissionService.requestAllPermissions();
-    if (!hasPermissions && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Camera and microphone permissions required')));
+    if (!hasPermissions && context != null && context!.mounted) {
+      ScaffoldMessenger.of(context!).showSnackBar(const SnackBar(content: Text('Camera and microphone permissions required')));
     }
     await CallingService().initialize();
     _setupFCMListeners();
@@ -57,19 +57,24 @@ class CallingInitMethod {
         }
       }
       _incomingCall = null;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Call was rejected')));
+      if (context != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(const SnackBar(content: Text('Call was rejected')));
+      }
     };
 
     CallingService().onCallEnded = (senderName) {
       if (_isCallingViewOpen) Get.close(1);
       _incomingCall = null;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$senderName ended the call')));
+      if (context != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(SnackBar(content: Text('$senderName ended the call')));
+      }
     };
   }
 
   void showIncomingCallDialog(CallData callData) {
+    if (context == null) return;
     showDialog(
-      context: context,
+      context: context!,
       barrierDismissible: false,
       builder: (context) {
         return IncomingCallDialog(
@@ -123,8 +128,8 @@ class CallingInitMethod {
       mobileNo: userData["mobile"] ?? '+91 98765 43210',
       address: {},
     );
-    if (context.mounted) {
-      await Navigator.of(context).push(
+    if (context != null && context!.mounted) {
+      await Navigator.of(context!).push(
         MaterialPageRoute(
           builder: (context) {
             return CallingView(channelName: channelName, callType: callType, receiver: receiver, sender: userModel);

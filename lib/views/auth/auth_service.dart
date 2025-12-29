@@ -38,7 +38,7 @@ class AuthService extends GetxService {
         return null;
       }
       if (response.message == "OTP sent to your mobile number.") {
-        final patientId = response.data['patient']["id"] ?? response.data['patient']["_id"];
+        final patientId = response.data['patientId'] ?? response.data['patient']["id"] ?? response.data['patient']["_id"];
         Get.toNamed(AppRouteNames.verifyOtp, arguments: {'mobileNo': response.data.text.trim(), 'patientId': patientId});
         return response.data;
       } else {

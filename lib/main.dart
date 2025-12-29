@@ -48,16 +48,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration.zero, () async => await CallingInitMethod().initData());
-  }
 
   @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(
       child: GetMaterialApp(
+        navigatorKey: CallingInitMethod().navigatorKey,
         builder: (BuildContext context, widget) {
           return OfflineBuilder(
             connectivityBuilder: (BuildContext context, List<ConnectivityResult> connectivity, Widget child) {
